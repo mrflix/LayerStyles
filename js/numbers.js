@@ -4,6 +4,7 @@
  */
 
 var regex = new RegExp(''), min, max, temporary_mode;
+var match = false, value, timeout, element;
 var digits = /[-1234567890]/g, hexcode = /[A-Fa-f0-9]/g;
 
 function init_number_field() {
@@ -30,50 +31,49 @@ function init_hex_field(){
 }
 
 function update_field(){
-    colorpicker.update(temporary_mode);
+    clearTimeout(timeout);
+    if (match) colorpicker.update(temporary_mode);
 }
 
-function restrictCharacters(event, type) {
-    var code;
+function restrictCharacters(event, type, object) {
+    var keycode;
+    element = object;
+    value = $(object).val();
     if (event.keyCode) {
-        code = event.keyCode;
+        keycode = event.keyCode;
     }
     else if (event.which) {
-        code = event.which;
+        keycode = event.which;
     }
-    var character = String.fromCharCode(code);
-    // 8 = backspace, 9 = tab, 13 = enter, 35 = home, 37 = left, 38 = top, 39 = right, 40 = down
-    var controlKeys = [ 8, 9, 13, 35, 36, 37, 38, 39, 40 ];
-    var isControlKey = controlKeys.join(",").match(new RegExp(code));
-    if (isControlKey) {
-        return true;
-    } else if (character.match(type)) {
-        colorpicker.update(temporary_mode);
-        return true;
-    }
-    event.preventDefault();
-    return false;
-}
-
-function accelerate(event) {
+    var character = String.fromCharCode(keycode);
     // 1 for key up, -1 for key down, 0 for other keys
-    var direction = 0, code;
-    if (event.keyCode) {
-        code = event.keyCode;
-    }
-    else if (event.which) {
-        code = event.which;
-    }
-    switch(code){
+    var direction = 0;
+    switch(keycode){
         case 38: direction = 1; break;
         case 40: direction = -1; break;
     }
-    if (direction === 0) { return true; }
-    event.preventDefault();
-    var value = $(this).val();
-    if (value === '') {
-        value = 0;
+    if (direction !== 0 && type === digits) {
+        accelerate(direction);
+        return false;
     }
+    else {
+        // 8 = backspace, 9 = tab, 13 = enter, 35 = home, 37 = left, 38 = top, 39 = right, 40 = down
+        var controlKeys = [ 8, 9, 13, 35, 36, 37, 38, 39, 40 ];
+        var isControlKey = controlKeys.join(",").match(new RegExp(keycode));
+        if (isControlKey) {
+            return true;
+        } else if (character.match(type)) {
+            match = true;
+            return true;
+        }
+        event.preventDefault();
+        return false;
+    }
+}
+
+function accelerate(direction) {
+    clearTimeout(timeout);
+    if (value === '') value = 0;
     var number = parseInt(value, 10);
     number += direction;
     if (number < min) {
@@ -85,8 +85,10 @@ function accelerate(event) {
         if(number === min) number = max;
         else if(number === max) number = min;
     }
-    $(this).val(number).select();
+    $(element).val(number).select();
+    value = number;
     colorpicker.update(temporary_mode);
+    timeout = setTimeout(function(){ accelerate(direction) }, 100);
 }
 
 function validate_input(event){
