@@ -60,7 +60,6 @@ function resize_layer(x, y){
 function parallelUniverse(){
     var x = roundToHalf(page.width/2 - layer.width/2),
         y = roundToHalf(page.height/2 - layer.height/2);
-    console.log(x, y);
     var radius = layer.borderRadius;
     // clear the filed
     pu.clearRect(0,0,page.width,page.height);
