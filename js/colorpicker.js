@@ -95,6 +95,7 @@ function colorpicker(object){
         self.paint_field();
         self.paint_slider();
         self.set_new_color();
+        self.move_slider($selected_input.val()*ratio);
     };
     this.paint_field = function(){
         var x_gradient, y_gradient;
@@ -462,13 +463,12 @@ function colorpicker(object){
     $hex_holder.click(this.click_hex);
     $hex.bind({
         focus: init_hex_field,
-        keydown: function(e){ restrictCharacters(e, hexcode) },
+        keydown: function(e){ restrictCharacters(e, hexcode, this) },
         keyup: update_field
     });
     $text_inputs.bind({
         focus: init_number_field,
-        keydown: function(e){ restrictCharacters(e, digits) },
-        keypress: accelerate,
+        keydown: function(e){ restrictCharacters(e, digits, this) },
         keyup: update_field,
         blur: validate_input
     });
