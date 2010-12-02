@@ -1,6 +1,16 @@
 var codebox = {
 	$box: $('#codeBox code'),
 	/**
+	 * @method  initClipboard - a click on the button with the id 'copyCode' will copy 'this.$box.text()' into the clipboard
+	 * @see		http://code.google.com/p/zeroclipboard/wiki/Instructions
+	 */
+	initClipboard: function(){
+		ZeroClipboard.setMoviePath( 'http://localhost/~mrflix/LayerStyles/js/zeroclipboard/ZeroClipboard.swf' );
+		var clip = new ZeroClipboard.Client();
+		clip.setText(this.$box.text());
+		clip.glue( 'copyCode' );
+	},
+	/**
 	 * @method  select - selects the code for easier copy&paste
 	 * @see		http://stackoverflow.com/questions/985272/
 	 */
@@ -12,6 +22,7 @@ var codebox = {
         selection.addRange(range);
 	},
 	init: function(){
-		this.$box.click( $.proxy(this, "select"));
+		this.initClipboard();
+		this.$box.click( $.proxy(this, "select") );
 	}
 };
