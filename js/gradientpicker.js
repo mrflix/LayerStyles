@@ -12,6 +12,7 @@
  */
 
 var gradientpicker = {
+	$o: $('#gradient_editor'),
 	$gradientPresets: $('#gradient_presets'),
 	$gradientName: $('#gradient_name'),
 	$gradientHolder: $('#gradient_holder'),
@@ -19,8 +20,12 @@ var gradientpicker = {
 	$stopColor: $('#stop_color'),
 	$stopLocation: $('#stop_location'),
 	$removeStop: $('#remove_stop'),
+	puff: null,
+	gradientDimensions: null,
+	gradientOffset: null,
 	currentGradient: null,
 	currentPick: null,
+	currentStopColor: null,
 	currentPosition: null,
 	currentColorField: null,
 	gradients: [
@@ -35,17 +40,31 @@ var gradientpicker = {
 	    this.$gradient.append(
 	        $('<div class="picker bottom" />')
 	        .css({ 'left': position+'%' })
-			.attr('data-color', color)
+			.attr({
+				'data-color': color,
+				'data-position': position
+			})
 	        .bind({
-	            click: function(e){ 
-					jQuery.proxy(this, "selectStop");
-					jQuery.proxy(this, "showMiddlepoints");
-				},
-	            dblclick: function(e){
+	            mousedown: function(event){
+					event.preventDefault();
 					gradientpicker.currentPick = this;
-					var currentColor = $(this).attr('data-color');
 					gradientpicker.selectPicker(position);
-					colorpicker.pick(currentColor, function(rgb){ gradientpicker.updatePicker(rgb); });
+					gradientpicker.currentStopColor = $(this).attr('data-color');
+					gradientpicker.currentColorField = $(gradientpicker.currentPick).find('.color_field');
+								
+					gradientpicker.selectStop(this);
+					gradientpicker.showMiddlepoints(this);
+					gradientpicker.gradientOffset = gradientpicker.$gradient.offset();
+					gradientpicker.movePicker(event);
+					$(document).bind('mousemove.global', $.proxy(gradientpicker, "movePicker") );
+				},
+	            dblclick: function(event){
+					event.preventDefault();
+					gradientpicker.currentPick = this;
+					gradientpicker.selectPicker(position);
+					gradientpicker.currentStopColor = $(this).attr('data-color');
+					
+					colorpicker.pick(gradientpicker.currentColor, function(rgb){ gradientpicker.updatePicker(rgb); });
 				}
 	        })
 	        .append($('<div class="arrow" />'))
@@ -54,8 +73,47 @@ var gradientpicker = {
 	        )
 	    );
 	},
+	movePicker: function(event){
+		event.preventDefault();
+		var x = Math.max(0, Math.min(this.gradientDimensions.width, event.pageX-this.gradientOffset.left));
+		var y = 33;
+		if( // out of range - remove gesture
+			event.pageX < (this.gradientOffset.left - 26) ||
+			event.pageX > (this.gradientOffset.left + this.gradientDimensions.width + 26) ||
+			event.pageY < (this.gradientOffset.top - 38) ||
+			event.pageY > (this.gradientOffset.top + this.gradientDimensions.height + 69) ){	
+				x = event.pageX - this.gradientOffset.left;
+				y = event.pageY - this.gradientOffset.top;
+				
+				if (this.puff == null) {
+					this.puff = $('<div id="puff" />')
+						.css({ 'left': event.pageX+2, 'top': event.pageY+16 })
+						.appendTo($body);
+					$(document).bind('mouseup.puff', gradientpicker.removeCurrentPicker );
+				}
+				else {
+					this.puff.css({ 'left': event.pageX+2, 'top': event.pageY+16 });
+				}
+		}
+		else {
+			// move picker
+			
+			if(this.puff != null){
+				$(document).unbind('mouseup.puff');
+				$('#puff').remove();
+				this.puff = null;
+			}
+		}
+		
+		$(this.currentPick).css({ 'left': x+'px', 'top': y+'px' });
+	},
+	removeCurrentPicker: function(event){
+		console.log('removed');
+		gradientpicker.puff = null;
+		$('#puff').remove();
+		$(this).unbind(event);
+	},
 	selectPicker: function(pos){
-		this.currentColorField = $(this.currentPick).find('.color_field');
 		var stops = this.currentGradient.stops;
 		switch(pos){
 			case 0:
@@ -81,6 +139,7 @@ var gradientpicker = {
 		var colorString = tools.toColor(newColor);
 		$(this.currentPick).attr('data-color', colorString);
 		this.currentColorField.css("background", colorString);
+		this.$stopColor.css("background", colorString);
 		var stops = this.currentGradient.stops;
 		// search for the position and inject new color
 		if(this.currentPosition > 0 && this.currentPosition < stops.length-1){
@@ -94,10 +153,10 @@ var gradientpicker = {
 	addMiddlepoint: function(position, realpos){
 	    this.$gradient.append(
 	        $('<span class="middlepoint bottom"><span /></span>')
-	        .attr('data-realpos', realpos)
+	        .attr('data-position', realpos)
 	        .css({ 'left': position+'%' })
 	        .bind({
-	            mousedown: function(e){ jQuery.proxy(this, "selectStop"); }
+	            mousedown: function(e){ gradientpicker.selectStop(this); }
 	        })
 	    );
 	},
@@ -176,7 +235,8 @@ var gradientpicker = {
 	    this.$stopLocation.removeAttr("disabled").val(pos).parent().removeClass("disabled");
 	    if (color !== null) {
 	        this.$removeStop.removeAttr("disabled");
-	        this.$stopColor.css({'background-color': color}).parent().removeClass("disabled");
+	        this.$stopColor
+				.css({'background-color': color}).parent().removeClass("disabled");
 	    }
 	    else {
 	        this.$removeStop.attr("disabled", "disabled");
@@ -192,12 +252,11 @@ var gradientpicker = {
 	    this.$stopColor.css({'background-color': 'transparent'}).parent().addClass("disabled");
 	},
 	selectStop: function(object){
+		this.currentPick = object;
 	    var $o = $(object);
-	    var pos = $o.css('left').slice(0,-1);
-	    var $field = $o.hasClass('color_field') ? $o : $o.find('.color_field');
+	    var pos = $o.attr('data-position');
+	    var $field = $o.find('.color_field');
 	    var color = $field.css('background-color') || null;
-	    var realpos = $o.attr('data-realpos');
-	    if (realpos) { pos = realpos; }
 	    this.showStop(pos, color);
 	    $o.siblings().removeClass('selected');
 	    $o.addClass('selected');
@@ -213,5 +272,9 @@ var gradientpicker = {
 	    for(var i = 0, length = this.gradients.length; i<length; i++){
 	        this.addGradientPreset(this.gradients[i].name, this.gradients[i].stops);
 	    }
+		
+		this.$stopColor.click();
+		this.$removeStop.click( $.proxy( this, "removeCurrentPicker") );
+		this.gradientDimensions = { 'width': this.$gradient.width(), 'height': this.$gradient.height() };
 	}
 };

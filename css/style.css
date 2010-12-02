@@ -149,7 +149,7 @@ h1 { padding: 8px; display: inline-block; font-weight: 300; }
 	    border-bottom-color: #515151;
 	}
 #dialog { top: 100px; left: 50px; width: 600px; display: none; }
-.window > div { min-height: 300px; padding: 15px 10px; overflow: hidden; }
+.window > div { min-height: 300px; padding: 15px 10px; }
 .main { width: 82%; float: left; font-size: 10px; }
     .main > .styles { width: 72%; float: left; }
         #holder { margin: 0 16px; }
@@ -190,7 +190,7 @@ h1 { padding: 8px; display: inline-block; font-weight: 300; }
 .controls { width: 18%; float: right; }
     .controls > div { text-align: center; }
     .controls > div input { margin-right: 2px; }
-#colorpicker { top: 50px; left: 300px; width: 556px; display: none; }
+#colorpicker { top: 50px; left: 300px; height: 360px; width: 556px; display: none; }
     #colorpicker > div { padding-top: 9px; }
     #colorpicker .main { width: 75%; height: 294px; margin-top: 21px; position: relative; }
     #color_field { height: 256px; width: 256px; position: absolute; }
@@ -417,4 +417,5 @@ button {
 }
 button::-moz-focus-inner { border: 0; } /* firefox outline removed */
 button:first-child { margin-top: 0; }
+#puff { width: 22px; height: 22px; background: url(../img/puff.png); position: absolute; display: block; z-index: 10; }
 .clear { clear: both; }

@@ -174,5 +174,8 @@ var tools = {
 	                'steps': this.decodeStops(stops)
 	            })
 	    });
+	},
+	focusWindow: function(o){
+		$(o).addClass('focused').siblings().removeClass('focused');
 	}
 }

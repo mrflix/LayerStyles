@@ -13,10 +13,9 @@
 
 var movePos = { x: 0, y: 0 };
 var shift = false;
-var helper = $('#helper');
 var browserPrefix = '';
-var body = $('body');
-var page = { width: body.width(), height: body.height() };
+var $body = $('body');
+var page = { width: $body.width(), height: $body.height() };
 var $dialog = $('#dialog');
 var $navElements = $('#nav ul li');
 var $holderElements = $('#holder > div');
@@ -268,13 +267,13 @@ function initialise() {
         var myOffset = $(this).offset();
         offset = { x: myOffset.left+(potDimensions.width/2), y: myOffset.top+(potDimensions.height/2) };
 		turnPot(event, this);
-        $(window).bind('mousemove.global', {pot: this}, turnPot);
+        $(document).bind('mousemove.global', {pot: this}, turnPot);
     });
     
     $sliders.bind('mousedown', function(event){
         offset = { x: $(this).offset().left, y: 0 };
 		slide(event, this);
-        $(window).bind('mousemove.global', {slider: this}, slide);
+        $(document).bind('mousemove.global', {slider: this}, slide);
     });
 
     $numericalInputs.bind({
@@ -293,22 +292,22 @@ function initialise() {
         movingWindow = $(this).parent();
         var myOffset = movingWindow.offset();
         movePos = { x:event.pageX-myOffset.left, y:event.pageY-myOffset.top };
-		movingWindow.addClass('focused').siblings().removeClass('focused');
-        $(window).bind('mousemove.global', moveWindow);
+		tools.focusWindow(movingWindow);
+        $(document).bind('mousemove.global', moveWindow);
     }); 
     resizeArea.bind({
         mousedown: function(event){
-            $(window).bind('mousemove.global', resizeLayer);
+            $(document).bind('mousemove.global', resizeLayer);
             var myOffset = $(this).offset();
             offset = { x: 15-(event.pageX-myOffset.left), y: 15-(event.pageY-myOffset.top) };
         },
         click: function(event){ event.stopPropagation(); } // prevent bubbling
     });
-    $(window).bind({
+    $(document).bind({
 		mousemove: function(e){ e.preventDefault(); },
         mouseup: function(){ $(this).unbind('mousemove.global'); },
         resize: function(event){
-            page = { width: body.width(), height: body.height() };
+            page = { width: $body.width(), height: $body.height() };
             if (page.width < layer.width) { resizeLayer(null, page.width, layer.height); }
             if (page.height < layer.height) { resizeLayer(null, layer.width, page.height); }
             $parallelUniverse.attr({'width': page.width, 'height': page.height});
@@ -316,15 +315,16 @@ function initialise() {
         },
         keydown: function(event){
             if(event.altKey){
-                body.addClass('alt');
+                $body.addClass('alt');
 				alt = true;
-                $(this).one('keyup', function(){ body.removeClass('alt'); });
+                $(this).one('keyup', function(){ $body.removeClass('alt'); });
             }
             if(event.shiftKey){
 				shift = true;
                 $(this).one('keyup', function(){ shift = false; });
             }
-        }
+        },
+		dblclick: function(event){ event.preventDefault(); }
     });
 
 	/*new uploader('droparea', 'status', 'list');

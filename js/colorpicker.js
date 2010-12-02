@@ -67,7 +67,7 @@ var colorpicker = {
         // "rgb(0,0,0)" => [0,0,0]
         var rgbArray = rgbString.slice(4).slice(0,-1).split(",");
         // show colorpicker
-        this.$element.show().css({ 'z-index': 2 }).siblings().css({ 'z-index': 1 });
+        tools.focusWindow(this.$element.show());
 		this.open = true;
         // set rgb
         this.setRgb(parseInt(rgbArray[0],10),parseInt(rgbArray[1],10),parseInt(rgbArray[2],10));
@@ -188,7 +188,7 @@ var colorpicker = {
     startPointer: function(event) {
     	this.offset = this.$circleField.offset();
 		this.calculatePointer(event);
-    	$(window).bind('mousemove.global', jQuery.proxy(this, "calculatePointer"));
+    	$(document).bind('mousemove.global', jQuery.proxy(this, "calculatePointer"));
     },
     calculatePointer: function(event) {
 		event.preventDefault();
@@ -318,7 +318,7 @@ var colorpicker = {
     startSlider: function(event) {
     	this.offset = this.$slideArea.offset();
 		this.slide(event);
-        $(window).bind('mousemove.global', jQuery.proxy(this, "slide"));
+        $(document).bind('mousemove.global', jQuery.proxy(this, "slide"));
     },
     slide: function(event) {
 		event.preventDefault();
