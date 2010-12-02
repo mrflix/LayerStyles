@@ -66,7 +66,7 @@ var colorpicker = {
         this.callback = callback;
         // "rgb(0,0,0)" => [0,0,0]
         var rgbArray = rgbString.slice(4).slice(0,-1).split(",");
-        // show colorpicker
+        // show it
         tools.focusWindow(this.$element.show());
 		this.open = true;
         // set rgb

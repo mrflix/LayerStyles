@@ -60,11 +60,7 @@ var gradientpicker = {
 				},
 	            dblclick: function(event){
 					event.preventDefault();
-					gradientpicker.currentPick = this;
-					gradientpicker.selectPicker(position);
-					gradientpicker.currentStopColor = $(this).attr('data-color');
-					
-					colorpicker.pick(gradientpicker.currentColor, function(rgb){ gradientpicker.updatePicker(rgb); });
+					colorpicker.pick(gradientpicker.currentStopColor, function(rgb){ gradientpicker.updatePicker(rgb); });
 				}
 	        })
 	        .append($('<div class="arrow" />'))

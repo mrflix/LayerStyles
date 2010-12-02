@@ -283,9 +283,9 @@ function initialise() {
         blur: function(e){ numbers.validateInput(e, this) }
     });
     
-    $colorfields.bind({
+    /*$colorfields.bind({
         click: pickColor
-    });
+    });*/
     
     moveAreas.bind('mousedown', function(event){ 
         event.preventDefault();

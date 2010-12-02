@@ -1,5 +1,6 @@
 var codebox = {
 	$box: $('#codeBox code'),
+	$copyCode: $('#copyCode'),
 	/**
 	 * @method  initClipboard - a click on the button with the id 'copyCode' will copy 'this.$box.text()' into the clipboard
 	 * @see		http://code.google.com/p/zeroclipboard/wiki/Instructions
@@ -8,7 +9,8 @@ var codebox = {
 		ZeroClipboard.setMoviePath( 'http://localhost/~mrflix/LayerStyles/js/zeroclipboard/ZeroClipboard.swf' );
 		var clip = new ZeroClipboard.Client();
 		clip.setText(this.$box.text());
-		clip.glue( 'copyCode' );
+		var flash = clip.getHTML(this.$copyCode.width(), this.$copyCode.height());
+		this.$copyCode.append(flash);
 	},
 	/**
 	 * @method  select - selects the code for easier copy&paste

@@ -39,6 +39,8 @@ ul { list-style: none; }
 		min-height: 0;
 		background: white;
 	}
+	#copyCode { position: relative; }
+		#copyCode embed { left: 0; position: absolute; }
 h1 { padding: 8px; display: inline-block; font-weight: 300; } 
     h1 + span { color: rgba(0,0,0,.75); }
 #layer { 
