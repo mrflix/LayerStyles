@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Layer Styles</title>
     <link rel="stylesheet" href="css/style.css" type="text/css" />
+	<link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="css/ipad.css" type="text/css" />
 </head>
 <body>
     <canvas id="parallel_universe"></canvas>
-    <div id="background"></div>
+    <div id="background_layer"></div>
     <div id="layer"><div id="resize" class="resize"></div></div>
     <div id="menu"><h1>Layer Styles</h1><span>easy webdesign</span></div>
     <ul id="layers">
@@ -26,38 +27,67 @@
             </div>
         </li>
     </ul>
-    <canvas id="eyedropper" width="2000px" height="1000px" class="eyedropper"></canvas>
+	<div id="codeBox" class="window">
+		<h2>Code Box</h2>
+		<div>
+			<code>
+				.classname {<br>
+								&nbsp;&nbsp;&nbsp;&nbsp;border: 1px solid black;<br>
+								&nbsp;&nbsp;&nbsp;&nbsp;background:<br>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-moz-linear-gradient( center bottom ,<br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb(191, 191, 191), <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb(217, 217, 217) 10%, <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb(242, 242, 242) 88%, <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb(247, 247, 247) 97%, <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb(252, 252, 252) <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);<br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;background:<br> 
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-webkit-gradient( linear, 50% 100%, 50% 0%, <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb( 191, 191, 191 ) ), <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;color-stop( 0.1, &nbsp;rgb( 217, 217, 217 ) ), <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;color-stop( 0.88, rgb( 242, 242, 242 ) ), <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;color-stop( 0.97, rgb( 247, 247, 247 ) ), <br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgb( 252, 252, 252 ) )<br>
+				                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);<br>
+								&nbsp;&nbsp;&nbsp;&nbsp;-webkit-box-shadow: 0 1px 5px rgba( 0, 0, 0, 0.75 );<br>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-moz-box-shadow: 0 1px 5px rgba( 0, 0, 0, 0.75 );<br>
+								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box-shadow: 0 1px 5px rgba( 0, 0, 0, 0.75 );<br>
+								}
+			</code>
+		</div>
+	</div>
+    <canvas id="eyedropper" width="2000" height="1000" class="eyedropper"></canvas>
     <div id="colorpicker" class="window">
         <h2>Pick a <span>Color</span></h2>
         <div>
             <div class="main">
-                <div id="color_field" class="box">
+                <div id="color_field" class="border_box">
                     <canvas id="field" width="256" height="256"></canvas>
                     <canvas id="circle" class="colorcircle" width="256" height="256"></canvas>
                 </div> 
                 <div id="color_slider">
-                    <canvas class="box" width="19" height="256"></canvas>
+                    <canvas class="border_box" width="19" height="256"></canvas>
                     <div>
                         <div class="arrow left"><div class="spike"></div><div class="rear"></div></div>
                         <div class="arrow right"><div class="spike"></div><div class="rear"></div></div>
                     </div>
                 </div>
                 <div class="color_preview lightbox">
-                    <label for="new_color">new</label>
+                    <label>new</label>
                     <div id="new_color"></div>
-                    <label for="current_color">current</label>
+                    <label>current</label>
                     <div id="current_color"></div>
                 </div>
                 <div class="color_inputs">
                     <ul>
-                        <li><input type="radio" name="color" value="hsb_h"><span>H:</span><input id="hsb_h" type="text" min="0" max="360" step="1" value="0">°</li>
-                        <li><input type="radio" name="color" value="hsb_s"><span>S:</span><input id="hsb_s" type="text" min="0" max="100" step="1" value="0">%</li>
-                        <li><input type="radio" name="color" value="hsb_b" checked="checked"><span>B:</span><input id="hsb_b" type="text" min="0" max="100" step="1" value="0">%</li>
+                        <li><input type="radio" name="color" value="hsb_h"><span>H:</span><input id="hsb_h" type="text" data-min="0" data-max="360" value="0">&deg;</li>
+                        <li><input type="radio" name="color" value="hsb_s"><span>S:</span><input id="hsb_s" type="text" data-min="0" data-max="100" value="0">%</li>
+                        <li><input type="radio" name="color" value="hsb_b" checked="checked"><span>B:</span><input id="hsb_b" type="text" data-min="0" data-max="100" value="0">%</li>
                     </ul>
                     <ul>
-                        <li><input type="radio" name="color" value="rgb_r"><span>R:</span><input id="rgb_r" type="text" min="0" max="255" step="1" value="0"></li>
-                        <li><input type="radio" name="color" value="rgb_g"><span>G:</span><input id="rgb_g" type="text" min="0" max="255" step="1" value="0"></li>
-                        <li><input type="radio" name="color" value="rgb_b"><span>B:</span><input id="rgb_b" type="text" min="0" max="255" step="1" value="0"></li>
+                        <li><input type="radio" name="color" value="rgb_r"><span>R:</span><input id="rgb_r" type="text" data-min="0" data-max="255" value="0"></li>
+                        <li><input type="radio" name="color" value="rgb_g"><span>G:</span><input id="rgb_g" type="text" data-min="0" data-max="255" value="0"></li>
+                        <li><input type="radio" name="color" value="rgb_b"><span>B:</span><input id="rgb_b" type="text" data-min="0" data-max="255" value="0"></li>
                     </ul>
                     <div id="hex_holder">#<input type="text" id="hex" size="10" maxlength="6"></div>
                 </div>
@@ -72,101 +102,186 @@
             </div>
         </div>
     </div>
+    <div id="gradient_editor" class="window">
+        <h2>Gradient Editor</h2>
+        <div>
+            <div class="static_right">
+                <div class="main">
+                    <div class="holder">
+                        <h3>Presets</h3>
+                        <div id="gradient_presets_holder" class="border_box">
+                            <div id="gradient_presets">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls sidebar">
+                    <button id="gradient_ok">OK</button>
+                    <button id="gradient_cancel">Cancel</button>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="static_right">
+                <div class="main">
+                    <div class="static_left">
+                        <span>Name:</span><input id="gradient_name" type="text">
+                    </div>
+                </div>
+                <div class="controls sidebar">
+                    <button id="gradient_new">New</button>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="holder">
+                <h3>Gradient</h3>
+                <div id="gradient_holder">
+                    <div class="border">
+                        <div id="gradient" class="eyedropper">
+                            <!--
+                            <div class="picker top selected" style="left: 0"><div class="arrow"></div><div class="box"><div class="color_field"></div></div></div>
+                            <div class="middlepoint top" style="left: 50%"><div></div></div>
+                            <div class="picker top selected" style="left: 100%"><div class="arrow"></div><div class="box"><div class="color_field"></div></div></div>
+                            <div class="picker bottom"><div class="arrow"></div><div class="box"><div class="color_field"></div></div></div>
+                            -->
+                        </div>
+                    </div>
+                </div>
+                <div id="stops" class="holder">
+                    <h3>Stops</h3>
+                    <!--<div id="opacity_stops">
+                        <div class="disabled">
+                            <span>Opacity:</span><input type="text" id="stop_opacity" data-min="0" data-max="100" disabled="disabled">%
+                        </div>
+                        <div class="disabled">
+                            <span>Location:</span><input type="text" id="stop_opacity_location" data-min="0" data-max="100" disabled="disabled">%
+                        </div>
+                        <button id="opacity_delete" disabled="disabled">Delete</button>
+                    </div>-->
+                    <div id="color_stops">
+                        <div class="disabled">
+                            <span>Color:</span><div id="stop_color" class="color_field"></div>
+                        </div>
+                        <div class="disabled">
+                            <span>Location:</span><input type="text" id="stop_location" data-min="0" data-max="100" disabled="disabled">%
+                        </div>
+                        <button id="remove_stop" disabled="disabled">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="dialog" class="window">
         <h2>Layer Style</h2>
         <div>
             <div class="main">
-                <div class="nav">
+                <div id="nav">
                     <ul>
                         <li>Styles</li>
                         <li class="active"><input type="checkbox" checked="checked">Drop Shadow</li>
                         <li><input type="checkbox">Inner Shadow</li>
-                        <li><input type="checkbox" checked="checked">Background</li>
-                        <li><input type="checkbox" checked="checked">Border</li>
+                        <li><input type="checkbox" checked="checked">Color Overlay</li>
+                        <li><input type="checkbox" checked="checked">Gradient Overlay</li>
+                        <li><input type="checkbox" checked="checked">Stroke</li>
+                        <li><input type="checkbox" checked="checked">Rounded Border</li>
                     </ul>
                 </div>
                 <div class="styles">
-                    <div class="holder">
+                    <div id="holder" class="holder">
+                        <div id="style_presets">
+                            <h3>Styles</h3>
+                        </div>
                         <div id="drop_shadow">
                             <h3>Drop Shadow</h3>
-                            <label for="drop_color">Color:</label>
+                            <label>Color:</label>
                             <div>
                                 <div id="drop_color" class="color_field"></div>
                             </div>
                             <label for="drop_opacity">Opacity:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="drop_opacity" type="text" min="0" max="100" step="1" value="75">
+                                <input id="drop_opacity" type="text" data-min="0" data-max="100" value="75">
                                 %
                             </div>
                             <label for="drop_angle" class="angle_holder">Angle:</label>
                             <div>
                                 <div class="pot"><div class="pointer"><div class="dot"></div><div class="line"></div></div></div>
                                 <div class="angle_holder">
-                                    <input id="drop_angle" class="angle" type="text" min="-180" max="180" step="1" value="90">
-                                    °
+                                    <input id="drop_angle" class="angle" type="text" data-min="-180" data-max="180" value="90">
+                                    &deg;
                                     <input type="checkbox" class="global_light"><label>Use Global Light</label>
                                 </div>
                             </div>
                             <label for="drop_distance">Distance:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="drop_distance" type="text" min="0" max="100" step="1" value="1">
+                                <input id="drop_distance" type="text" data-min="0" data-max="100" value="1">
                                 px
                             </div>
                             <label for="drop_spread">Spread:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="drop_spread" type="text" min="0" max="100" step="1" value="0">
+                                <input id="drop_spread" type="text" data-min="0" data-max="100" value="0">
                                 %
                             </div>
                             <label for="drop_size">Size:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="drop_size" type="text" min="0" max="255" step="1" value="1">
+                                <input id="drop_size" type="text" data-min="0" data-max="255" value="1">
                                 px
                             </div>
                             <div class="clear"></div>
                         </div>
                         <div id="inner_shadow">
                             <h3>Inner Shadow</h3>
-                            <label for="inner_color">Color:</label>
+                            <label>Color:</label>
                             <div>
                                 <div id="inner_color" class="color_field"></div>
                             </div>
                             <label for="inner_opacity">Opacity:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="inner_opacity" type="text" min="0" max="100" step="1" value="75">
+                                <input id="inner_opacity" type="text" data-min="0" data-max="100" value="75">
                                 %
                             </div>
                             <label for="inner_angle" class="angle_holder">Angle:</label>
                             <div>
                                 <div class="pot"><div class="pointer"><div class="dot"></div><div class="line"></div></div></div>
                                 <div class="angle_holder">
-                                    <input id="inner_angle" class="angle" type="text" min="-180" max="180" step="1" value="90">
-                                    °
+                                    <input id="inner_angle" class="angle" type="text" data-min="-180" data-max="180" value="90">
+                                    &deg;
                                </div>
                             </div>
                             <label for="inner_distance">Distance:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="inner_distance" type="text" min="0" max="100" step="1" value="1">
+                                <input id="inner_distance" type="text" data-min="0" data-max="100" value="1">
                                 px
                             </div>
                             <label for="inner_spread">Spread:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="inner_spread" type="text" min="0" max="100" step="1" value="0">
+                                <input id="inner_spread" type="text" data-min="0" data-max="100" value="0">
                                 %
                             </div>
-                            <label for="inner_blur">Blur:</label>
+                            <label for="inner_size">Size:</label>
                             <div>
                                 <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-                                <input id="inner_blur" type="text" min="0" max="255" step="1" value="1">
+                                <input id="inner_size" type="text" data-min="0" data-max="255" value="1">
                                 px
                             </div>
                             <div class="clear"></div>
+                        </div>
+                        <div id="colorOverlay">
+                            <h3>Color Overlay</h3>
+                        </div>
+                        <div id="gradientOverlay">
+                            <h3>Gradient Overlay</h3>
+                        </div>
+                        <div id="stroke">
+                            <h3>Stroke</h3>
+                        </div>
+                        <div id="roundedCorner">
+                            <h3>Rounded Corner</h3>
                         </div>
                     </div>
                 </div>
@@ -180,10 +295,19 @@
             </div>
         </div>
     </div>
-    
+	<!--<div id="droparea">
+		<div id="status"></div>
+		<div id="list"></div>
+	</div>-->
 <script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/html5uploader.js"></script>
+<script type="text/javascript" src="js/localization.js"></script>
 <script type="text/javascript" src="js/numbers.js"></script>
+<script type="text/javascript" src="js/color.js"></script>
+<script type="text/javascript" src="js/tools.js"></script>
 <script type="text/javascript" src="js/colorpicker.js"></script>
+<script type="text/javascript" src="js/gradientpicker.js"></script>
+<script type="text/javascript" src="js/codebox.js"></script>
 <script type="text/javascript" src="js/application.js"></script>
 </body>
 </html>

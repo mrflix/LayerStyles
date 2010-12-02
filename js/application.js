@@ -1,47 +1,167 @@
 /*
+ *     _                                       ________                  _
+ *    | |                                     |  ______|                | |
+ *    | |                                     | |          _            | |
+ *    | |       _____ ___  ___ _____  _____   | |______  _| |_ ___  ___ | |     _____  _____
+ *    | |      |  _  |\  \/  /|  _  ||   __|  |______  ||_   _|\  \/  / | |    |  _  ||  ___|
+ *    | |_____ | |_| | /   /  |  ___||  |      ______| |  | |   /   /   | |___ |  ___||___  |
+ *    |_______||___,\|/___/   |_____||__|     |________|  |_|  /___/    |_____||_____||_____|
+ *    
  *    Copyright (c) 2010 Felix Niklas
  *    This script is freely distributable under the terms of the MIT license.
  */
 
-var move_function, mouseup_function, movePos = { x: 0, y: 0 }, mousePos = { x: 0, y: 0 };
+var movePos = { x: 0, y: 0 };
+var shift = false;
+var helper = $('#helper');
 var browserPrefix = '';
 var body = $('body');
 var page = { width: body.width(), height: body.height() };
 var $dialog = $('#dialog');
+var $navElements = $('#nav ul li');
+var $holderElements = $('#holder > div');
 var $pots = $('.pot');
-var pot_dimensions = {height: $pots.eq(0).height(), width: $pots.eq(0).width()};
+var potDimensions = {'height': 40, 'width': 40};
 var $sliders = $('.slider');
-var $number_inputs = $('input[type=text]', $dialog);
-var $buttons = { ok: $('#ok'), cancel: $('#cancel'), new_style: $('#new_style')  };
+var $numericalInputs = $('input[type=text]', $dialog);
+var $buttons = { 'ok': $('#ok'), 'cancel': $('#cancel'), 'newStyle': $('#new_style')  };
 var $layer = $('#layer');
-var resize_area = $('#resize');
+var resizeArea = $('#resize');
 var $background = $('#background');
-var $parallel_universe = $('#parallel_universe').attr({height: page.height, width: page.width});
-var pu = $parallel_universe.get(0).getContext('2d');
-var windows = $('.window'), moving_window = null;
-var move_areas = $('> h2', windows);
-var colorpicker = new colorpicker($('#colorpicker'));
+var $parallelUniverse = $('#parallel_universe').attr({height: page.height, width: page.width});
+var pu = $parallelUniverse.get(0).getContext('2d');
+var windows = $('.window'), movingWindow = null;
+var moveAreas = $('> h2', windows);
 var offset = { x: 0, y: 0 };
+var $colorfields = $('.color_field');
 var background = {
-        'background': [{'type': 'radial', 'position': ['center', 'center'], 'steps': ['white', 'rgba(255,255,255,0))']},
-                       {'type': 'linear', 'position': ['top', 'left'] , 'steps': ['#e2e2e2', '#ababab']} ]
+        'background': [
+               {'type': 'radial', 'position': 'center', 'steps': ['white', 'rgba(255,255,255,0)']},
+               {'type': 'linear', 'position': 40, 'steps': ['#e2e2e2', '#ababab']}
+        ]
 };
 var layer = {
         'height': 300,
         'width': 300,
-        'boxShadow': [{ 'offset': [0, 1], 'blur': 5, 'color': 'rgba(0, 0, 0, 0.75)'}],
+        'dropShadow': { 'offset': [0, 1], 'blur': 5, 'color': 'rgba(0, 0, 0, 0.75)'},
+		'innerShadow': {},
         'border': {'size': 1, 'style': 'solid', 'color': 'black'},
-        'borderRadius': {'tl': { x: 13, y: 13 }, 'tr': { x: 13, y: 13 }, 'br': { x: 13, y: 13 }, 'bl': { x: 13, y: 13 }},
-        'background': [{'type': 'plain', 'color': 'white'}]
+        'background': [{'type': 'solid', 'color': 'white'}]
+};
+var defaults = {
+        'dropShadow': [{
+            'active': true,
+            'color': '000000',
+            'opacity': 75,
+            'angle': 90,
+            'distance': 1,
+            'spread': 0,
+            'size': 1
+        }],
+        'innerShadow': [{
+            'active': false,
+            'color': '000000',
+            'opacity': 75,
+            'angle': 90,
+            'distance': 1,
+            'spread': 0,
+            'size': 1
+        }],
+        'background': [{
+            'active': false,
+            'color': '000000',
+            'opacity': 75,
+            'angle': 90,
+            'distance': 1,
+            'spread': 0,
+            'size': 1
+        }]
 };
 
-function move_window(){
-    moving_window.css({ top: mousePos.y - movePos.y, left: mousePos.x - movePos.x });
+function fn(rgb){
+    // console.log(rgb.r, rgb.g, rgb.b);
 }
 
-function resize_layer(x, y){
-    var halfWidth = parseInt((x/2 || mousePos.x - page.width/2 + offset.x), 10);
-    var halfHeight = parseInt((y/2 || mousePos.y - page.height/2 + offset.y), 10);
+function pickColor(e){
+    e.preventDefault();
+    var $field = $(this).hasClass('color_field') ? $(this) : $(this).find('.color_field');
+    var currentColor = $field.css('background-color');
+    colorpicker.pick(currentColor, fn);
+}
+
+var lang = localization.de;
+
+function moveWindow(event){
+    movingWindow.css({ top: event.pageY - movePos.y, left: event.pageX - movePos.x });
+}
+
+function roundToHalf(value){
+    return (value - parseInt(value, 10)) === 0.5 ? value+1 : value + 1.5;
+}
+
+function parallelUniverse(){
+    var x = roundToHalf(page.width/2 - layer.width/2);
+    var y = roundToHalf(page.height/2 - layer.height/2);
+	var radius = layer.borderRadius;
+    function roundedRect(x,y,width,height,radius,fixedBorder){	
+        pu.beginPath();
+		// fixedBorder means its calculated in pixels - else in percentage
+		if(!fixedBorder){ radius = (width+height)*radius/50; }
+		if(radius > height/2) radius = height/2;
+		if(radius > width/2) radius = width/2;
+		if(typeof radius === "number"){
+			pu.moveTo(x, y+radius);
+			pu.arc(x+radius, y+radius, radius, Math.PI, Math.PI*3/2, false);
+			pu.lineTo(x+width-radius, y);
+			pu.arc(x+width-radius, y+radius, radius, Math.PI*3/2, 0, false);
+			pu.lineTo(x+width, y+height-radius);
+			pu.arc(x+width-radius, y+height-radius, radius, 0,  Math.PI/2,  false);
+			pu.lineTo(x+radius, y+height);
+			pu.arc(x+radius, y+height-radius, radius, Math.PI/2,  Math.PI,  false);
+			pu.lineTo(x, y+radius);
+		}
+		else {
+        	pu.moveTo(x, y+radius.tl.y);
+	        pu.quadraticCurveTo(x, y, x+radius.tl.x, y);
+	        pu.lineTo(x+width-radius.tr.x, y);
+	        pu.quadraticCurveTo(x+width, y, x+width, y+radius.tr.y);
+	        pu.lineTo(x+width, y+height-radius.br.y);
+	        pu.quadraticCurveTo(x+width, y+height, x+width-radius.br.x, y+height);
+	        pu.lineTo(x+radius.bl.x, y+height);
+	        pu.quadraticCurveTo(x, y+height, x, y+height-radius.bl.y);
+			pu.lineTo(x, y+radius.tl.y);
+		}
+        pu.closePath();
+    }
+    // clear the filed
+    pu.clearRect(0,0,page.width,page.height);
+    // shadow
+    pu.shadowOffsetX = layer.dropShadow.offset[0];
+    pu.shadowOffsetY = layer.dropShadow.offset[1];
+    pu.shadowBlur = layer.dropShadow.blur;
+    pu.shadowColor = layer.dropShadow.color;
+    // background
+    //pu.fillStyle = layer.background[0].color;
+	var gradient = pu.createLinearGradient(x, 0, x+layer.width, 0);
+	gradient.addColorStop(0, 'rgb(0,0,0)');
+    gradient.addColorStop(1, 'rgb(255,255,255)');
+	pu.fillStyle = gradient;
+    // border
+    pu.strokeStyle = layer.border.color;
+    pu.lineWidth = layer.border.size;
+    // paint the path
+	if(!radius){
+		pu.strokeRect(x,y,layer.width,layer.height);
+	} else {
+		roundedRect(x,y,layer.width,layer.height, radius, layer.borderRadiusFixed);
+	}
+	pu.fillRect(x,y,layer.width,layer.height);
+}
+parallelUniverse();
+
+function resizeLayer(event, x, y){
+    var halfWidth = parseInt((x/2 || event.pageX - page.width/2 + offset.x), 10);
+    var halfHeight = parseInt((y/2 || event.pageY - page.height/2 + offset.y), 10);
     var maxWidth = page.width/2;
     var maxHeight = page.height/2;
     halfWidth =  halfWidth < 8 ? 8 : halfWidth > maxWidth ? maxWidth : halfWidth;
@@ -57,191 +177,178 @@ function resize_layer(x, y){
     parallelUniverse();
 }
 
-function parallelUniverse(){
-    var x = roundToHalf(page.width/2 - layer.width/2),
-        y = roundToHalf(page.height/2 - layer.height/2);
-    var radius = layer.borderRadius;
-    // clear the filed
-    pu.clearRect(0,0,page.width,page.height);
-    // paint the path
-    roundedRect(x,y,layer.width,layer.height,radius);
-    // shadow
-    pu.shadowOffsetX = layer.boxShadow[0].offset[0];
-    pu.shadowOffsetY = layer.boxShadow[0].offset[1];
-    pu.shadowBlur = layer.boxShadow[0].blur;
-    pu.shadowColor = layer.boxShadow[0].color;
-    // background
-    pu.fillStyle = layer.background[0].color;
-    pu.fill();
-    // border
-    pu.strokeStyle = layer.border.color;
-    pu.lineWidth = layer.border.size;
-    pu.stroke();
-    function roundedRect(x,y,width,height,radius){
-        // pu.arc(8, 8, 7, -Math.PI/2, Math.PI/2, false); <- half circle
-        pu.beginPath();
-        pu.moveTo(x, y+radius.tl.y);
-        pu.quadraticCurveTo(x, y, x+radius.tl.x, y);
-        pu.lineTo(x+width-radius.tr.x, y);
-        pu.quadraticCurveTo(x+width, y, x+width, y+radius.tr.y);
-        pu.lineTo(x+width, y+height-radius.br.y);
-        pu.quadraticCurveTo(x+width, y+height, x+width-radius.br.x, y+height);
-        pu.lineTo(x+radius.bl.x, y+height);
-        pu.quadraticCurveTo(x, y+height, x, y+height-radius.bl.y);
-        pu.closePath();
-    }
-}
-parallelUniverse();
-
 function print(){
-    document.location.href = $parallel_universe.get(0).toDataURL('image/png');
+    document.location.href = $parallelUniverse.get(0).toDataURL('image/png');
 }
 
-function roundToHalf(value){
-    return (value - parseInt(value)) === 0.5 ? value+1 : value + 1.5;
-}
-
-function turn_pot(pot){
-    var opposite = offset.y - mousePos.y,
-        adjacent = mousePos.x - offset.x,
-        radiants = Math.atan(opposite/adjacent),
-        degrees = Math.round(radiants*(180/Math.PI), 10);
-    if(adjacent <= 0 && opposite >= 0){ degrees += 180; }
-    else if(opposite < 0 && adjacent < 0){ degrees-= 180; }
-    rotate_pointer(pot, degrees);
-    var input = $(pot).next('div').children('input:first-child').val(degrees);
-}
-
-function rotate_pointer(pot, degrees){
+function rotatePointer(pot, degrees){
     var transform = browserPrefix+'transform';
     $('> div', pot).css(transform, 'rotate('+-degrees+'deg)');
 }
 
-function initialise_sliders(){
+function turnPot(event, pot){
+	event.preventDefault();
+    var pot = pot || event.data.pot,
+		opposite = offset.y - event.pageY,
+        adjacent = event.pageX - offset.x,
+        radiants = Math.atan(opposite/adjacent),
+        degrees = Math.round(radiants*(180/Math.PI), 10);
+	if(shift){
+		if(degrees <= 90 && degrees > 82) degrees = 90;	
+		else if(degrees <= 82 && degrees > 67) degrees = 75;
+		else if(degrees <= 67 && degrees > 52) degrees = 60;
+		else if(degrees <= 52 && degrees > 37) degrees = 45;
+		else if(degrees <= 37 && degrees > 22) degrees = 30;
+		else if(degrees <= 22 && degrees > 7) degrees = 15;	
+		else if(degrees <= 7 && degrees > -8) degrees = 0;	
+		else if(degrees <= -8 && degrees > -23) degrees = -15;	
+		else if(degrees <= -23 && degrees > -38) degrees = -30;	
+		else if(degrees <= -38 && degrees > -53) degrees = -45;	
+		else if(degrees <= -53 && degrees > -68) degrees = -60;	
+		else if(degrees <= -68 && degrees > -83) degrees = -75;
+		else if(degrees <= -83 && degrees > -90) degrees = -90;
+	}
+    if(adjacent < 0 && opposite >= 0){ degrees+= 180; }
+    else if(opposite < 0 && adjacent < 0){ degrees-= 180; }
+	if(degrees === -180) degrees = 180;
+    rotatePointer(pot, degrees);
+    var input = $(pot).next('div').children('input:first-child').val(degrees);
+}
+
+function moveSlider($slider, x){
+    $('> div:nth-child(2)', $slider).css({ left: x+'px' });
+}
+
+function setSlider(slider){
+    var $inputField = $(slider).next('input'),
+        value = $inputField.val(),
+        max = $inputField.attr('data-max'),
+        length = $(slider).width(),
+        position = Math.round(length*value/max);
+    moveSlider(slider, position);
+}
+
+function initialiseSliders(){
     $.each($sliders, function(i, slider){
-        set_slider(slider);
+        setSlider(slider);
     });
 }
 
-function set_slider(slider){
-    var $input_field = $(slider).next('input'),
-        value = $input_field.val(),
-        max = $input_field.attr('max'),
-        length = $(slider).width(),
-        position = Math.round(length*value/max);
-    move_slider(slider, position);
-}
-
-function slide(slider){
-    var $input_field = $(slider).next('input'),
-        max = $input_field.attr('max'),
-        length = $(slider).width(),
-        position = mousePos.x - offset.x;
-    if(position < 0) position = 0;
-    else if(position > length) position = length;
-    move_slider(slider, position);
-    $input_field.val(Math.round(position*max/length));
-}
-
-function move_slider(slider, x){
-    $('> div:nth-child(2)', slider).css({ left: x+'px' });
-}
-
-function move(event){
-    if(move_function){
-        event.preventDefault();
-        mousePos.x = event.pageX;
-        mousePos.y = event.pageY;
-        move_function.fn.apply(this, move_function.arguments);
+function slide(event, slider){
+	event.preventDefault();
+    var $slider = $(slider || event.data.slider);
+		$inputField = $slider.next('input'),
+        max = $inputField.attr('data-max'),
+        length = $slider.width(),
+        position = event.pageX - offset.x;
+    if (position < 0) {
+        position = 0;
     }
+    else if (position > length) {
+        position = length;
+    }
+    moveSlider($slider, position);
+    $inputField.val(Math.round(position*max/length));
+}
+
+function showSlide(pos){
+    $holderElements.hide().eq(pos).show();
 }
 
 function initialise() {
-    initialise_sliders()
-    // find css3 prefix "-webkit-" or "-moz-"
-    if($.browser.webkit) browserPrefix = '-webkit-';
-    else if($.browser.mozilla) browserPrefix = '-moz-';
+    initialiseSliders();
+    
+    $navElements.click(function(){
+        var pos = $navElements.removeClass('active').index(this);
+        $(this).addClass('active');
+        showSlide(pos);
+    });
     
     $pots.bind('mousedown', function(event){
-        var my_offset = $(this).offset();
-        offset = { x: my_offset.left+(pot_dimensions.width/2), y: my_offset.top+(pot_dimensions.height/2) };
-        move_function = { fn: turn_pot, 'arguments': [this] };
+        var myOffset = $(this).offset();
+        offset = { x: myOffset.left+(potDimensions.width/2), y: myOffset.top+(potDimensions.height/2) };
+		turnPot(event, this);
+        $(window).bind('mousemove.global', {pot: this}, turnPot);
     });
     
     $sliders.bind('mousedown', function(event){
-        var my_offset = $(this).offset();
-        offset = { x: my_offset.left, y: 0 };
-        move_function = { fn: slide, 'arguments': [this] };
+        offset = { x: $(this).offset().left, y: 0 };
+		slide(event, this);
+        $(window).bind('mousemove.global', {slider: this}, slide);
     });
 
-    $number_inputs.bind({
-        focus: init_number_field,
-        keydown: function(e){ restrictCharacters(e, digits) },
-        keypress: accelerate,
-        /*keyup: update_field,*/
-        blur: validate_input
+    $numericalInputs.bind({
+        focus: numbers.initNumberField,
+        keydown: function(e){ restrictCharacters(e, digits, this); },
+        keyup: function(){ updateField('style'); },
+        blur: function(e){ numbers.validateInput(e, this) }
     });
     
-    move_areas.bind('mousedown', function(event){ 
-        event.preventDefault(); 
-        move_function = { fn: move_window };
-        moving_window = $(this).parent(); 
-        var my_offset = moving_window.offset();
-        movePos = { x:event.pageX-my_offset.left, y:event.pageY-my_offset.top };
-        moving_window.css({ 'z-index': 2 }).siblings().css({ 'z-index': 1 });
+    $colorfields.bind({
+        click: pickColor
+    });
+    
+    moveAreas.bind('mousedown', function(event){ 
+        event.preventDefault();
+        movingWindow = $(this).parent();
+        var myOffset = movingWindow.offset();
+        movePos = { x:event.pageX-myOffset.left, y:event.pageY-myOffset.top };
+		movingWindow.addClass('focused').siblings().removeClass('focused');
+        $(window).bind('mousemove.global', moveWindow);
     }); 
-    resize_area.bind({
+    resizeArea.bind({
         mousedown: function(event){
-            move_function = { fn: resize_layer };
-            var my_offset = $(this).offset();
-            offset = { x: 15-(event.pageX-my_offset.left), y: 15-(event.pageY-my_offset.top) };
-            $parallel_universe.addClass('resize');
-            resize_area.addClass('visible');
-            mouseup_function = function(){ 
-                resize_area.removeClass('visible');
-                $parallel_universe.removeClass('resize');
-            }
+            $(window).bind('mousemove.global', resizeLayer);
+            var myOffset = $(this).offset();
+            offset = { x: 15-(event.pageX-myOffset.left), y: 15-(event.pageY-myOffset.top) };
         },
         click: function(event){ event.stopPropagation(); } // prevent bubbling
     });
     $(window).bind({
-        mousedown: function(event){ move(event); },
-        mousemove: function(event){ move(event); },
-        mouseup: function(event){ 
-            if (mouseup_function) {
-                mouseup_function(event); 
-                mouseup_function = null;
-            }
-            move_function = null; 
-        },
+		mousemove: function(e){ e.preventDefault(); },
+        mouseup: function(){ $(this).unbind('mousemove.global'); },
         resize: function(event){
             page = { width: body.width(), height: body.height() };
-            if(page.width < layer.width) resize_layer(page.width, layer.height);
-            if(page.height < layer.height) resize_layer(layer.width, page.height);
-            $parallel_universe.attr({'width': page.width, 'height': page.height});
+            if (page.width < layer.width) { resizeLayer(null, page.width, layer.height); }
+            if (page.height < layer.height) { resizeLayer(null, layer.width, page.height); }
+            $parallelUniverse.attr({'width': page.width, 'height': page.height});
             parallelUniverse();
         },
         keydown: function(event){
-            if(event.altKey){ 
+            if(event.altKey){
                 body.addClass('alt');
+				alt = true;
                 $(this).one('keyup', function(){ body.removeClass('alt'); });
+            }
+            if(event.shiftKey){
+				shift = true;
+                $(this).one('keyup', function(){ shift = false; });
             }
         }
     });
-    
-    $layer.click(function(event){
-        $dialog.show();
-    });
 
-    $buttons.ok.click(function(){
-        $dialog.hide();
-    });
-    $buttons.cancel.click(function(){
-        $dialog.hide();
-    });
+	/*new uploader('droparea', 'status', 'list');
+	$('#droparea').bind({
+		hover: function(){ console.log("yes", this); $(this).addClass('hello'); },
+		dragEnter: function(e){ $(this).addClass('hello'); },
+		drop: function(e){ 
+			e.preventDefault();
+			console.log(e.dataTransfer.files);
+			$(this).removeClass('hello');
+		}
+	});//*/
+    $layer.click(function(event){ $dialog.show(); });
+    $buttons.ok.click(function(){ $dialog.hide(); });
+    $buttons.cancel.click(function(){ $dialog.hide(); });
+
+	colorpicker.init();
+	gradientpicker.init();
+	codebox.init();
 }
 
 // isEven: (n % 2) == 0 -> true? even : odd
 
 // GET THE BALL ROLLIN
-initialise();
+$(document).ready(function(){
+	initialise();
+});
