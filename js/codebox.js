@@ -101,7 +101,8 @@ var codeBox = {
 		}
 		// add gradient
 		if(currentStyle.background.isActive){
-			this.code += "background-image: " + css.drawGradient(currentStyle) + ";<br>";
+			this.code += "background-image: " + css.drawGradient(currentStyle, "-moz-") + ";<br>";
+			this.code += "background-image: " + css.drawGradient(currentStyle, "-oldwebkit-") + ";<br>";
 		}
 		// add dropShadow and innerShadow
 		this.code += currentStyle.dropShadow.isActive || currentStyle.innerShadow.isActive ? "box-shadow: " + css.boxShadow(currentStyle) + ";<br>" : "";
