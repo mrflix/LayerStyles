@@ -4,6 +4,9 @@ body {
 	font: 12px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
 	background-color: #fcfcfc;
 	background-image: -moz-linear-gradient(top, rgba(52,154,227,0.21), rgba(52,154,227,0) 13px);
+	background-image: -webkit-linear-gradient(top, rgba(52,154,227,0.21), rgba(52,154,227,0) 13px);
+	background-image: -o-linear-gradient(top, rgba(52,154,227,0.21), rgba(52,154,227,0) 13px);
+	background-image: -ms-linear-gradient(top, rgba(52,154,227,0.21), rgba(52,154,227,0) 13px);
 }
 #arche {
 	width: 556px;
