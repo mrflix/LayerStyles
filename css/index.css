@@ -9,8 +9,9 @@ body {
 	background-image: -ms-linear-gradient(top, rgba(52,154,227,0.21), rgba(52,154,227,0) 13px);
 }
 #arche {
+	padding: 34px;
 	width: 556px;
-	margin: 34px auto 0;
+	margin: 0 auto;
 	text-transform: uppercase;
 	text-shadow: 0 1px white;
 	z-index: 200;
