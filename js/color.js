@@ -1,6 +1,6 @@
 var color = {
-	hsbFromRgb: function(r, g, b) {
-	    r = r/255, g = g/255, b = b/255;
+	hsbFromRgb: function(rgb) {
+	    r = rgb[0]/255, g = rgb[1]/255, b = rgb[2]/255;
 	    var max = Math.max(r, g, b), min = Math.min(r, g, b);
 	    var h, s, v = max;
 
@@ -19,9 +19,9 @@ var color = {
 	    }
 	    return [Math.round(h * 360), Math.round(s * 100), Math.round(v * 100)];
 	},
-	rgbFromHsb: function(h, s, v) {
+	rgbFromHsb: function(hsv) {
 	    var r, g, b;
-	    h = h/360; s = s/100; v = v/100;
+	    h = hsv[0]/360; s = hsv[1]/100; v = hsv[2]/100;
 
 	    var i = Math.floor(h * 6);
 	    var f = h * 6 - i;
@@ -40,14 +40,25 @@ var color = {
 	    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 	},
 	rgbFromHex: function(hex){
-	    return [
-			parseInt(hex.substring(0,2), 16),
-			parseInt(hex.substring(2,4), 16),
-			parseInt(hex.substring(4,6), 16)
-		];
+		if(hex.length === 3){
+			return [
+				parseInt(hex.substring(0,1)+hex.substring(0,1), 16),
+				parseInt(hex.substring(1,2)+hex.substring(1,2), 16),
+				parseInt(hex.substring(2,3)+hex.substring(2,3), 16)
+			]
+		} else {
+	   		return [
+				parseInt(hex.substring(0,2), 16),
+				parseInt(hex.substring(2,4), 16),
+				parseInt(hex.substring(4,6), 16)
+			]
+		}
 	},
-	hexFromRgb: function(r, g, b){
-	    return this.toHex(r)+this.toHex(g)+this.toHex(b);
+	hexFromRgb: function(rgb){
+		var hexcode = this.toHex(rgb[0])+this.toHex(rgb[1])+this.toHex(rgb[2]);
+			parts = hexcode.split("");
+	    // "000" instead of "000000"
+	    return (parts[0]===parts[1]) && (parts[2]===parts[3]) && (parts[4]==parts[5]) ? parts[0]+parts[2]+parts[4] : hexcode;
 	},
 	toHex: function(n) {
 	    if(n === 0) { return '00'; }

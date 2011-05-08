@@ -1,0 +1,135 @@
+* { margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+	font: 12px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+	background-color: #fcfcfc;
+	background-image: -moz-linear-gradient(top, rgba(52,154,227,0.21), rgba(52,154,227,0) 13px);
+}
+#arche {
+	width: 556px;
+	margin: 34px auto 0;
+	text-transform: uppercase;
+	text-shadow: 0 1px white;
+	z-index: 200;
+	position: relative;
+	-moz-transition: 320ms;
+	-webkit-transition: 320ms;
+	transition: 320ms;
+}
+h1 span { color: #349ae3; }
+a { text-decoration: none; color: #349ae3; }
+em { font-weight: bold; font-style: normal; }
+header { 
+	height: 112px;
+	position: relative;
+}
+	#logo { 
+		top: 32px;
+		left: 21px;
+		font-family: 'LeagueGothicRegular';
+		font-size: 86px;
+		line-height: 1;
+		position: absolute;
+	}
+	#headline {
+		left: 100px;
+		top: 35px;
+		position: absolute;
+	}
+	.tagline {
+		color: #666;
+		font-weight: normal;
+	}
+.hero {
+    -webkit-border-top-left-radius: 4px;
+    -webkit-border-top-right-radius: 4px;
+    -moz-border-radius-topleft: 4px;
+    -moz-border-radius-topright: 4px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    -moz-box-shadow: 0 15px 40px 10px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.16);
+    -webkit-box-shadow: 0 15px 40px 10px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.16);
+    box-shadow: 0 15px 40px 10px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.16);
+}
+#ready {
+	margin: 21px 0;
+	display: none;
+}
+#not-ready { 
+	margin: 21px 0;
+	display: none;
+	position: relative;
+}
+	#not-ready .holder { 
+		left: 153px;
+		top: 76px;
+		width: 276px;
+		border-radius: 4px;
+	    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.21), 0 15px 40px 10px rgba(0, 0, 0, 0.34);
+	    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.21), 0 15px 40px 10px rgba(0, 0, 0, 0.34);
+	    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.21), 0 15px 40px 10px rgba(0, 0, 0, 0.34);
+		position: absolute;
+		text-shadow: none;
+		text-transform: none;
+	}
+	#not-ready .upper {
+		padding: 13px;
+		border: 1px solid #A6281C;
+    	background: #F03432;
+    	border-top-left-radius: 4px;
+		border-top-right-radius: 4px;
+		-moz-box-shadow: 0 0 0 1px #F25146 inset;
+		-webkit-box-shadow: 0 0 0 1px #F25146 inset;
+		box-shadow: 0 0 0 1px #F25146 inset;
+	}
+	#not-ready h2 { padding-bottom: 13px; font-size: 14px; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.21); border-bottom: 1px solid rgba(0, 0, 0, 0.34); } 
+	.features { border-top: 1px solid rgba(255,255,255,.13); padding-top: 8px;  line-height: 2; }
+	.features span { 
+		display: none;
+		padding: 1px 8px;
+		color: white;
+		white-space: nowrap;
+		background: #F25146;
+		text-shadow: 0 1px 0 rgba(255,255,255,0.21);
+		border-radius: 7px;
+	}
+	#not-ready .bottom {
+		padding: 13px;
+		color: white;
+		text-shadow: 0 2px black;
+		background: rgba(0,0,0,.8);
+		border-bottom-right-radius: 4px;
+		border-bottom-left-radius: 4px;
+	}
+.js.nativejson.flexbox.canvas.rgba.borderradius.boxshadow.cssgradients #ready { display: block; }
+	#ready span { color: green; font-weight: bold; }
+.no-js #not-ready,
+.no-flexbox #not-ready,
+.no-canvas #not-ready,
+.no-rgba #not-ready,
+.no-borderradius #not-ready,
+.no-boxshadow #not-ready,
+.no-cssgradients #not-ready { display: block; }
+.no-js .feature-js { display: inline; }
+.no-nativejson .feature-json { display: inline; }
+.no-flexbox .feature-flexbox { display: inline; }
+.no-canvas .feature-canvas { display: inline; }
+.no-rgba .feature-rgba { display: inline; }
+.no-borderradius .feature-borderradius { display: inline; }
+.no-boxshadow .feature-boxshadow { display: inline; }
+.no-cssgradients .feature-cssgradients { display: inline; }
+footer {
+	padding: 0 21px;
+	color: rgba(0,0,0,.34);
+}
+@font-face {
+    font-family: 'LeagueGothicRegular';
+    src: url('font/League_Gothic-webfont.eot');
+    src: url('font/League_Gothic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/League_Gothic-webfont.woff') format('woff'),
+         url('font/League_Gothic-webfont.ttf') format('truetype'),
+         url('font/League_Gothic-webfont.svg#LeagueGothicRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}

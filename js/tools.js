@@ -1,15 +1,56 @@
 var tools = {
-	browserPrefix: $.browser.webkit ? '-webkit-' : $.browser.mozilla ? '-moz-' : '',
+	options: {
+		hex: true
+	},
+	//browserPrefix: $.browser.webkit ? '-webkit-' : $.browser.mozilla ? '-moz-' : '',
+	browserPrefix: "",
+	// technic by Lea Verou
+	// see http://leaverou.me/2009/02/find-the-vendor-prefix-of-the-current-browser/
+	getBrowserPrefix: function(){
+		var regex = /^(Moz|Webkit|Khtml|O|ms|Icab)(?=[A-Z])/;
+		var tester = document.getElementsByTagName('script')[0];
+		var prefix = "";
+		for(var prop in tester.style) {
+			if(regex.test(prop)) {
+				prefix = prop.match(regex)[0];
+				break;
+			}
+		}
+		if('WebkitOpacity' in tester.style) prefix = 'Webkit';
+		this.browserPrefix = prefix === "" ? "" : '-' + prefix.charAt(0).toLowerCase() + prefix.slice(1) +'-';
+	},
+	/**
+	 * @method  roundToMultiple
+	 * @param   number {integer}
+	 * @param	multiple {integer}	multiple to round to
+	 * @return  rounded number {integer}
+	 * @example roundToMultiple(35, 15) returns 30
+	 * @usage	in ui.js -> pot; to round to 15° steps
+	 */
+	roundToMultiple: function(number, multiple){
+	    var value = number/multiple,
+	    	integer = Math.floor(value),
+	    	rest = value - integer;
+	    return rest > 0.5 ? (integer+1)*multiple : integer*multiple;
+	},
 	/**
 	 * @method  toColor
-	 * @param   array {Array}   RGB or RGBA Color Array 
-	 * @return  CSS Color {String}
+	 * @param   rgb {array}   RGB or RGBA Color Array
+	 * @return  CSS Color {string}
 	 * @example toColor([255,255,255]) returns 'rgb(255,255,255)'
 	 *          toColor([255,255,255,0.5]) returns 'rgba(255,255,255,0.5)'
 	 */
-	toColor: function(array){
-	    var mode = array.length === 3 ? 'rgb' : 'rgba';
-	    return mode+'('+array.join(',')+')';
+	toColor: function(rgb){
+	    var mode = rgb.length === 3 ? 'rgb' : 'rgba',
+			string = mode+'('+rgb.join(',')+')';
+				
+		if (css.colors[string]) {
+		    return css.colors[string];
+		}
+		else if(this.options.hex && mode === 'rgb'){
+			return "#"+color.hexFromRgb(rgb);
+		}
+	    return string;
 	},
 	/**
 	 * @method  getCenter	returns the center between a starting and an ending point
@@ -51,8 +92,9 @@ var tools = {
 	/**
 	 * @method  decodeStops
 	 * @param   stops {array}	encoded color stops
+	 * @param	alpha {float} [optional] 	opacity value between 0-1
 	 * @return  {array} decoded color stops: rgb strings
-	 * @example decodeStops([0,0,0], 10, [255,255,255]) returns ['rgb(0,0,0)', 'rgb(128,128,128)', 'rgb(255,255,255)']
+	 * @example decodeStops([0,0,0], 10, [255,255,255]) returns ['rgb(0,0,0)', 'rgb(25,25,25) 10%', 'rgb(255,255,255)']
 	 */
 	decodeStops: function(stops){
 	    var steps = [];
@@ -60,7 +102,7 @@ var tools = {
 	        var stop = stops[i];
 	        switch(typeof stop){
 	        case 'object': // => [255,255,255] or [[255,255,255], 33]
-	            if(stop.length === 3){ // => [255,255,255]
+	            if(stop.length > 2){ // => [255,255,255]
 	                steps[i] = this.toColor(stop);
 	            }
 	            else { // => [[255,255,255], 33]
@@ -74,6 +116,84 @@ var tools = {
 	        }           
 	    }
 	    return steps;
+	},
+	/**
+	 * @method  decodeCanvasGradient
+	 * @param   stops {array} the color stops
+	 * @param	angle {integer} the gradients angle
+	 * @param   ctx {canvas 2d context}	the context the gradient is for
+	 * @param   x {integer}	the x coordinate where the gradient should start
+	 * @param   y {integer}	the y coordinate where the gradient should start
+	 * @param   width {integer}	the width of the gradients box
+	 * @param   height {integer} the height of the gradients box
+	 * @return  {canvas-gradient}
+	 */
+	decodeCanvasGradient: function(stops, angle, style, ctx, x, y, width, height){
+	    var gradient,
+			// looks like stops is still referenced to currentStyle.background.translucentStops at this point
+			tempStops = $.extend(true, [], stops);
+		
+		switch(style){
+			case "linear":
+				/* 	missing: angle support
+					
+					0° 	-> 	x+width,	y, 			x, 			y
+					45° ->	x+width,	y,			x,			y+height
+					90°	->	x,			y,			x,			y+height
+					135°->	x,			y,			x+width,	y+height
+					180°->	x,			y,			x+width,	y
+					225°->	x,			y+height,	x+width,	y
+					270°->	x,			y+height,	x,			y
+					315°->	x+width,	y+height,	x,			y
+					
+					there is a pattern :) something with sin & cos
+					for now now default to 90
+				*/
+		    	gradient = ctx.createLinearGradient(x, y, x, y+height);
+				break;
+			case "reflected":
+				tempStops = this.reflectStops(tempStops);
+				gradient = ctx.createLinearGradient(x, y, x, y+height);
+				break;
+			case "contain":
+				var closestSide = width < height ? width/2 : height/2;
+				gradient = ctx.createRadialGradient(x+width/2, y+height/2, 0, x+width/2, y+height/2, closestSide); // centered
+				break;
+			case "cover":
+				// farest corner = half diagonal side >> pitagoras
+				var farestCorner = Math.sqrt( width * width + height * height )/2;
+				gradient = ctx.createRadialGradient(x+width/2, y+height/2, 0, x+width/2, y+height/2, farestCorner); // centered
+				break;
+		}
+		// bring the stops in the right order for canvas gradient:
+	    for(var i=0, length=tempStops.length; i<length; i++){
+	        var stop = tempStops[i], color, pos;
+			// if the first stop has an offset add a color stop to 0
+			if(i === 0 && stop.length === 2){
+				gradient.addColorStop(0, this.toColor(stop[0]));
+			}
+	        switch(typeof stop){
+	        case 'object': // => [255,255,255] or [[255,255,255], 33]
+	            if(stop.length === 3){ // => [255,255,255]
+	                pos = i === 0 ? 0 : 100; // can either be the start or the end
+					color = this.toColor(stop);
+	            }
+	            else { // => [[255,255,255], 33]
+	                color = this.toColor(stop[0]);
+					pos = stop[1];
+	            }
+	            break;
+	        case 'number': // => 11
+	            var middlepoint = this.getMiddlepoint(tempStops[i-1], stop, tempStops[i+1]);
+	            color = this.toColor(middlepoint[0]);
+				pos = middlepoint[1];
+	            break;
+	        }
+			// pos is now between 0-100 - for canvas we need it between 0-1
+			pos = pos/100;
+	     	gradient.addColorStop(pos, color);
+	    }
+	    return gradient;
 	},
 	/**
 	 * @method  opposite	
@@ -93,89 +213,56 @@ var tools = {
             return 'right';
         }
     },
-	/**
-	 * @method  cssGradient	
-	 * @param   gradient {object}
-	 * @return  {array} decoded color stops: rgb strings
-	 * @example cssGradient([0,0,0], 10, [255,255,255]) returns ['rgb(0,0,0)', 'rgb(128,128,128)', 'rgb(255,255,255)']
-	 */
-	cssGradient: function(gradient){
-	    var pos = gradient.position,
-	        type = gradient.type,
-	        steps = gradient.steps;
-	    if (this.browserPrefix === '-webkit-') {
-	        if (typeof pos === 'number') { // -90 => '50% 0, 50% 100%'
-	            var rad = pos/(180/Math.PI);
-	            var opp = Math.round(Math.tan(rad)*50);
-	            var adj = Math.round(50/Math.tan(rad));
-	            // dang: 45deg is left bottom, not right top -> fix please!
-	            var start, stop; // [x, y]
-	            if (-45 < pos && pos < 45) { 
-	                start = ['100%', opp+'%'];
-	                stop = ['0', opp+50+'%'];
-	            }
-	            if (45 < pos && pos < 135) {
-	                start = [adj+'%', '0'];
-	                stop = [adj+50+'%', '100%'];
-	            }
-	            if (135 < pos && pos < -135) {
-	                start = ['0', opp+50+'%'];
-	                stop = ['100%', opp+'%'];
-	            }
-	            if (-135 < pos && pos < -45) {
-	                start = [adj+50+'%', '100%'];
-	                stop = [adj+'%', '0'];
-	            }
-	            pos = start.join(" ")+', '+stop.join(" ");
-	        }
-	        else { 
-	            if (pos.indexOf(" ") !== -1) { // 'left top' => 'left top, right bottom'
-	                pos = pos.split(" ");
-	                pos = pos[0]+" "+pos[1]+", "+this.opposite(pos[0])+" "+this.opposite(pos[1]);
-	            }
-	            else {
-	                if (pos === 'top' || pos === 'bottom') { // 'top' => 'center top, center bottom'
-	                    pos = 'center '+pos+', center '+this.opposite(pos);
-	                }
-	                else { // 'left' => 'left center, right center'
-	                    pos = pos+' center, '+this.opposite(pos)+' center';
-	                }
-	            }
-	        }
-	        // form webkit gradient-stops syntax
-	        var stops = "from("+steps.shift()+"), to("+steps.pop()+")";
-	        for (var i=0,length=steps.length; i<length; i++) {
-	            var step = steps[i];
-	            if(step.indexOf(" ") !== -1) { // "rgb(0,0,0) 25%" => "25%, rgb(0,0,0)"
-	                step = step.split(" ").reverse().join(", ");
-	            }
-	            else { // "rgb(0,0,0)" => "50%, rgb(0,0,0)"
-	                var percentage = 100/(length+1);
-	                step = percentage+"%, "+step;
-	            }
-	            stops+= ", color-stop("+ step +")";
-	        }
-	        return this.browserPrefix +'gradient('+ type +', '+ pos +', '+ stops +')';
-	    }
-	    else {
-	        if (type === 'linear') {
-	            // -90 => add deg
-	            pos = typeof pos === 'number' ? pos+'deg' : pos;
-	            return this.browserPrefix +'linear-gradient('+ pos +', '+ steps.join(", ") +')';
-	        }
-	    }
+	reflectStops: function(stops){
+		var first = [],
+			second = [];
+			// bug: turns everything around
+		for(var i=0, l=stops.length; i<l; i++){
+			var stop = stops.shift(),
+				start, end;
+			switch(typeof stop){
+				case "number":
+					start = Math.round(stop/2);
+					end = 100-start;
+					break;
+				case "object":
+					start = stop.slice(0);
+					end = stop.slice(0);
+					if(stop.length === 2){
+						start[1] = Math.round(stop[1]/2);
+						end[1] = 100-start[1];
+					}
+					break;
+			}
+			
+			// add 50% to the last element
+			if(i === l-1) start = [start, 50];
+			
+			first.push(start);
+			
+			// don't add the last stop cause we only need one center
+			if(i != l-1) second.unshift(end);
+		}
+		return first.concat(second);
 	},
-	drawGradient: function(o, type, position, stops){
-	    $(o).css({
-	        'background': 
-	            this.cssGradient({
-	                'type': type,
-	                'position': position,
-	                'steps': this.decodeStops(stops)
-	            })
-	    });
+	reverseStops: function(stops){
+		var reversed = [],
+			stops = stops.slice(0);
+		while(stops.length){
+			var stop = stops.pop(), rev;
+			switch(typeof stop){
+				case "number":
+					rev = 100-stop;
+					break;
+				case "object":	
+					rev = stop.slice(0);
+					if(stop.length === 2){
+						rev[1] = 100-stop[1];
+					}
+					break;
+			}
+			reversed.push(rev);
+		}
+		return reversed;
 	},
-	focusWindow: function(o){
-		$(o).addClass('focused').siblings().removeClass('focused');
-	}
 }

@@ -1,14 +1,8 @@
 /*
- *     _                             _____ _         _          
- *    | |                           / ____| |       | |         
- *    | |      __ _ _   _  ___ _ __| (___ | |_ _   _| | ___ ___ 
- *    | |     / _` | | | |/ _ \ '__|\___ \| __| | | | |/ _ | __|
- *    | |____| (_| | |_| |  __/ |   ____) | |_| |_| | |  __|__ \
- *    |______|\__,_|\__, |\___|_|  |_____/ \__|\__, |_|\___|___/
- *                   __/ |                      __/ |           
- *                  |___/                      |___/
+ *	  LayerStyles
+ * 	  http://www.layerstyles.org
  *    
- *    Copyright (c) 2010 Felix Niklas
+ *    Copyright (c) 2011 Felix Niklas
  *    This script is freely distributable under the terms of the MIT license.
  */
 
@@ -16,6 +10,7 @@ var colorpicker = {
 	open: false,
     currentColor: "000000", // hex
     callback: null,
+	thisArg: null,
     swatches: [
 		{'title': 'White', 'hex': 'ffffff'},
         {'title': '10% Gray', 'hex': 'e5e5e5'},
@@ -29,6 +24,7 @@ var colorpicker = {
         {'title': '90% Gray', 'hex': '1a1a1a'},
         {'title': 'Black', 'hex': '000000'}
 	],
+	$selectedInput: null,
     colorHistory: [],
     pointerPos: { 'x': 0, 'y': 0 },
     hsb: { h: 0, s: 0, b: 0 },
@@ -38,50 +34,24 @@ var colorpicker = {
     max: 0, // the maximum input value
     ratio: 0, // the ratio for the slider: its 0.7111 (hue), ~1 (rgb) or 2.56 (saturation/brightness)
     offset: 0, // the offset relative to the document will be stored in here to calculate mouse-dragging
-    $element: $('#colorpicker'),
-	$textHolder: $('#colorpicker li'),
-	$hexHolder: $('#hex_holder'),
-	$swatchHolder: $('#swatches'),
-	$currentColor: $('#current_color'),
-	$newColor: $('#new_color'),
-	$textInputs: $('#colorpicker li input[type=text]'),
-	$radioInputs: $('#colorpicker li input[type=radio]'),
-	$selectedInput: null,
-	$hsb_h: $('#hsb_h'),
-	$hsb_s: $('#hsb_s'),
-	$hsb_b: $('#hsb_b'),
-	$rgb_r: $('#rgb_r'),
-	$rgb_g: $('#rgb_g'),
-	$rgb_b: $('#rgb_b'),
-	$hex: $('#hex'),
-	$button_ok: $('#color_ok'),
-	$button_cancel: $('#color_cancel'),
-	$circleField: $('#circle'),
-	$slideArea: $('#color_slider'),
-	$slider: $('#color_slider > div'),
-    cf: $('#field').get(0).getContext('2d'),
-    cc: $('#circle').get(0).getContext('2d'),
-    cs: $('#color_slider canvas').get(0).getContext('2d'),
-	pick: function(rgbString, callback) {
+	pick: function(rgbArray, callback, thisArg) {
+		showPickArea();
         this.callback = callback;
-        // "rgb(0,0,0)" => [0,0,0]
-        var rgbArray = rgbString.slice(4).slice(0,-1).split(",");
-        // show it
-        tools.focusWindow(this.$element.show());
-		this.open = true;
+		this.thisArg = thisArg;
         // set rgb
         this.setRgb(parseInt(rgbArray[0],10),parseInt(rgbArray[1],10),parseInt(rgbArray[2],10));
         // update
         this.update('rgb_r');
         // set currentColor
         this.setCurrentColor();
+        // show it
+        nav.goTo(3);
     },
     setCurrentColor: function(hex) {
         this.currentColor = hex || this.hex;
         this.$currentColor.css('background', '#'+this.currentColor);
     },
 	pickCurrentColor: function(){
-		console.log(this.currentColor, this.hex);
 		this.setHex(this.currentColor);
 		this.update('hex');
 	},
@@ -111,7 +81,7 @@ var colorpicker = {
         this.paintSlider();
         this.setNewColor();
         this.moveSlider(this.$selectedInput.val()*this.ratio);
-        if(this.callback) { this.callback(this.rgb); }
+        if(this.callback) this.callback.call(this.thisArg, color.rgbFromHex(this.hex));
     },
     paintField: function() {
         var xGradient, yGradient;
@@ -121,7 +91,7 @@ var colorpicker = {
         yGradient = this.cf.createLinearGradient(0, 0, 256, 0);
         switch (this.mode) {
         case 'hsb_h': // rainbow
-            var hue = color.rgbFromHsb(this.hsb.h, 100, 100);
+            var hue = color.rgbFromHsb([this.hsb.h, 100, 100]);
             yGradient.addColorStop(0, 'white');
             yGradient.addColorStop(1, 'rgb('+hue[0]+','+hue[1]+','+hue[2]+')');
             xGradient.addColorStop(0, 'transparent');
@@ -286,13 +256,13 @@ var colorpicker = {
         case 'hsb_s': // max saturation to unsaturated
             var brightness = this.hsb.b;
             if(brightness <= 33) brightness = 33;
-            var saturated = color.rgbFromHsb(this.hsb.h, 100, brightness);
-            var unsaturated = color.rgbFromHsb(this.hsb.h, 0, brightness);
+            var saturated = color.rgbFromHsb([this.hsb.h, 100, brightness]);
+            var unsaturated = color.rgbFromHsb([this.hsb.h, 0, brightness]);
             gradient.addColorStop(0, 'rgb('+saturated[0]+','+saturated[1]+','+saturated[2]+')');
             gradient.addColorStop(1, 'rgb('+unsaturated[0]+','+unsaturated[1]+','+unsaturated[2]+')');
             break;
         case 'hsb_b': // max brightness to black
-            var brightest = color.rgbFromHsb(this.hsb.h, this.hsb.s, 100);
+            var brightest = color.rgbFromHsb([this.hsb.h, this.hsb.s, 100]);
             gradient.addColorStop(0, 'rgb('+brightest[0]+','+brightest[1]+','+brightest[2]+')');
             gradient.addColorStop(1, 'black');
             break;
@@ -363,9 +333,9 @@ var colorpicker = {
 	    this.$hsb_b.val(this.hsb.b);
 	},
 	setRgb: function(r,g,b) {
-	    this.$rgb_r.val(r || this.rgb.r);
-	    this.$rgb_g.val(g || this.rgb.g);
-	    this.$rgb_b.val(b || this.rgb.b);
+	    this.$rgb_r.val(r != null ? r : this.rgb.r);
+	    this.$rgb_g.val(g != null ? g : this.rgb.g);
+	    this.$rgb_b.val(b != null ? b : this.rgb.b);
 	},
 	setHex: function(hex) {
 	    var hexcode = hex || this.hex,
@@ -375,14 +345,14 @@ var colorpicker = {
 	    this.$hex.val(hexcode);
 	},
 	hsbToRgb: function() {
-	    var rgb = color.rgbFromHsb(this.hsb.h, this.hsb.s, this.hsb.b);
+	    var rgb = color.rgbFromHsb([this.hsb.h, this.hsb.s, this.hsb.b]);
 	    this.rgb.r = rgb[0];
 	    this.rgb.g = rgb[1];
 	    this.rgb.b = rgb[2];
 	    this.setRgb();
 	},
 	rgbToHex: function(){
-	    this.hex = color.hexFromRgb(this.rgb.r, this.rgb.g, this.rgb.b);
+	    this.hex = color.hexFromRgb([this.rgb.r, this.rgb.g, this.rgb.b]);
 	    this.setHex();
 	},
 	hexToRgb: function(){
@@ -396,19 +366,17 @@ var colorpicker = {
 	    this.$newColor.css('background', '#'+this.hex);
 	},
 	rgbToHsb: function() {
-	    var hsb = color.hsbFromRgb(this.rgb.r, this.rgb.g, this.rgb.b);
+	    var hsb = color.hsbFromRgb([this.rgb.r, this.rgb.g, this.rgb.b]);
 	    this.hsb.h = hsb[0];
 	    this.hsb.s = hsb[1];
 	    this.hsb.b = hsb[2];
 	    this.setHsb();
 	},
     addSwatch: function(title, hex) {
-        this.$swatchHolder.append(
-                $('<span/>')
+        return $('<span class="swatch" />')
                 .attr({'title': title, 'data-hex': hex})
                 .css({'background': '#'+hex})
-                .bind('click', {self: this}, this.handleSwatch)
-            );
+                .bind('click', {self: this}, this.handleSwatch);
     },
 	handleSwatch: function(e){
         e.stopPropagation();
@@ -425,6 +393,7 @@ var colorpicker = {
             var rest = self.swatches.slice(position + 1);
             self.swatches.length = position;
             self.swatches.push.apply(self.swatches, rest);
+			localStorage["swatches"] = JSON.stringify(self.swatches);
             $(this).remove();
         }
         // else get that swatches color
@@ -435,30 +404,44 @@ var colorpicker = {
         }
     },
 	okAction: function(){
-		this.setCurrentColor();
-        this.colorHistory.push(this.currentColor);
-        this.$element.hide();
-        this.callback = null;
-		this.open = false;
+		this.close("ok");
 	},
 	cancelAction: function(){
-		this.setCurrentColor(this.colorHistory.pop());
-        this.$element.hide();
+		this.close("cancel");
+	},
+	close: function(mode){
+		var rgb;
+		switch(mode){
+			case "ok":
+				this.setCurrentColor();
+				this.colorHistory.push(this.currentColor);
+				rgb = color.rgbFromHex(this.hex);
+				break;
+			case "cancel":
+				rgb = color.rgbFromHex(this.currentColor);
+				break;
+		}
+        if(this.callback) this.callback.call(this.thisArg, rgb);
         this.callback = null;
 		this.open = false;
+		hidePickArea();
+		nav.goTo(-1);
 	},
 	newSwatch: function(event){
 		var self = event.data.self;
 		var title = prompt(lang.ColorSwatchName,"Swatch "+self.swatches.length);
         if(title){
-            self.addSwatch(title, self.hex);
-            self.swatches.push({'title': title, 'color': self.hex});
+            self.$swatchHolder.append(self.addSwatch(title, self.hex));
+            self.swatches.push({'title': title, 'hex': self.hex});
+			localStorage["swatches"] = JSON.stringify(self.swatches);
         }
 	},
 	drawSwatches: function(){
+		var swatches = $('<div/>');
 		for(var i = 0, length = this.swatches.length; i<length; i++){
-	        this.addSwatch(this.swatches[i].title, this.swatches[i].hex);
+	        swatches.append( this.addSwatch(this.swatches[i].title, this.swatches[i].hex) );
 	    }
+		this.$swatchHolder.append(swatches);
 	},
 	selectInput: function(pos){
 		this.mode = this.$radioInputs.eq(pos).val();
@@ -503,6 +486,31 @@ var colorpicker = {
         }
     },
 	init: function() {
+		this.$element = $('#colorpicker');
+		this.$textHolder = this.$element.find('li');
+		this.$hexHolder = $('#hex_holder');
+		this.$swatchHolder = $('#swatches');
+		this.$currentColor = $('#current_color');
+		this.$newColor = $('#new_color');
+		this.$textInputs = this.$element.find('li input[type=text]');
+		this.$radioInputs = this.$element.find('li input[type=radio]');
+		this.$hsb_h = $('#hsb_h');
+		this.$hsb_s = $('#hsb_s');
+		this.$hsb_b = $('#hsb_b');
+		this.$rgb_r = $('#rgb_r');
+		this.$rgb_g = $('#rgb_g');
+		this.$rgb_b = $('#rgb_b');
+		this.$hex = $('#hex');
+		this.$button_ok = $('#color_ok');
+		this.$button_cancel = $('#color_cancel');
+		this.$circleField = $('#circle');
+		this.$slideArea = $('#color_slider');
+		this.$slider = this.$slideArea.find('> div');
+	    this.cf = $('#field').get(0).getContext('2d');
+	    this.cc = $('#circle').get(0).getContext('2d');
+	    this.cs = this.$slideArea.find('canvas').get(0).getContext('2d');
+		
+		if(localStorage["swatches"]) this.swatches = JSON.parse(localStorage["swatches"]);
 		this.$currentColor.click( jQuery.proxy(this, "pickCurrentColor") );
 	    this.$button_ok.click( jQuery.proxy(this, "okAction") );
 	    this.$button_cancel.click( jQuery.proxy(this, "cancelAction") );
@@ -511,15 +519,15 @@ var colorpicker = {
 	    this.$textHolder.bind('click', {self: this}, this.clickAll);
 	    this.$hexHolder.click( jQuery.proxy(this, "clickHex") );
 	    this.$hex.bind({
-	        focus: function(){ numbers.initHexField(this); },
-	        keydown: function(e){ numbers.restrictCharacters(e, numbers.HEXCODE, this); },
-	        keyup: function(){ numbers.updateField("color"); }
+	        focus: function(){ numbers.initHexField(this, 'color'); },
+	        keydown: numbers.restrictCharacters,
+	        keyup: numbers.keyUp
 	    });
 	    this.$textInputs.bind({
-	        focus: function(){ numbers.initNumberField(this); },
-	        keydown: function(e){ numbers.restrictCharacters(e, numbers.DIGITS, this); },
-	        keyup: function(){ numbers.updateField("color"); },
-	        blur: function(e){ numbers.validateInput(e, this); }
+	        focus: function(){ numbers.initNumberField(this, 'color'); },
+	        keydown: numbers.restrictCharacters,
+	        keyup: numbers.keyUp,
+	        blur: numbers.validateInput
 	    });
 	    this.$swatchHolder.bind('click', {self: this}, this.newSwatch);
 		// find initial checked input

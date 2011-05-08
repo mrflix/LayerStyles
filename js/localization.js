@@ -21,7 +21,9 @@ var localization = {
             "ClosestValueInserted": "Closest value inserted",
             "AnIntegerBetween": "An integer between",
             "and": "and",
-            "isRequired": "is required"
+            "isRequired": "is required",
+			"Custom": "Custom",
+			"DeleteStyle": "Delete Style"
         },
         de: {
             "Color": "Farbe",
@@ -45,6 +47,8 @@ var localization = {
             "ClosestValueInserted": "Naheliegendste Zahl eingesetzt",
             "AnIntegerBetween": "Eine Zahl zwischen",
             "and": "und",
-            "isRequired": "wird benötigt"
+            "isRequired": "wird benötigt",
+			"Custom": "Unbekannt",
+			"DeleteStyle": "Style löschen"
         }
 }

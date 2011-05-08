@@ -1,4 +1,4 @@
-/*
+/*!
  *     _                                       ________                  _
  *    | |                                     |  ______|                | |
  *    | |                                     | |          _            | |
@@ -7,343 +7,387 @@
  *    | |_____ | |_| | /   /  |  ___||  |      ______| |  | |   /   /   | |___ |  ___||___  |
  *    |_______||___,\|/___/   |_____||__|     |________|  |_|  /___/    |_____||_____||_____|
  *    
- *    Copyright (c) 2010 Felix Niklas
+ * 	  http://www.layerstyles.org
+ *    
+ *    Copyright (c) 2011 Felix Niklas
  *    This script is freely distributable under the terms of the MIT license.
  */
 
-var movePos = { x: 0, y: 0 };
-var shift = false;
+localStorage['version'] = "0.1";
+
+var movePos = { x: 0, y: 0 }, bytes, reader;
 var browserPrefix = '';
 var $body = $('body');
-var page = { width: $body.width(), height: $body.height() };
+var $overlay = $('#overlay');
+var $workspace = $('#workspace');
+var dimensions = { width: $workspace.width(), height: $workspace.height() };
 var $dialog = $('#dialog');
+var $layerstyle = $('#layerstyle');
 var $navElements = $('#nav ul li');
 var $holderElements = $('#holder > div');
 var $pots = $('.pot');
 var potDimensions = {'height': 40, 'width': 40};
-var $sliders = $('.slider');
+var $sliders = $('.slider'), shouldEase = false;
 var $numericalInputs = $('input[type=text]', $dialog);
 var $buttons = { 'ok': $('#ok'), 'cancel': $('#cancel'), 'newStyle': $('#new_style')  };
 var $layer = $('#layer');
 var resizeArea = $('#resize');
-var $background = $('#background');
-var $parallelUniverse = $('#parallel_universe').attr({height: page.height, width: page.width});
+var $backgroundLayer = $('#background_layer');//.css("height", dimensions.height);
+var $parallelUniverse = $('#parallel_universe').attr({height: dimensions.height, width: dimensions.width});
 var pu = $parallelUniverse.get(0).getContext('2d');
-var windows = $('.window'), movingWindow = null;
-var moveAreas = $('> h2', windows);
+var $innerShadowUniverse = $('#innerShadow_universe').attr({height: dimensions.height, width: dimensions.width});
+var iu = $innerShadowUniverse.get(0).getContext('2d');
+var moveAreas = $('.moveable'), movingWindow;
 var offset = { x: 0, y: 0 };
 var $colorfields = $('.color_field');
+var currentStyle, lang;
 var background = {
-        'background': [
-               {'type': 'radial', 'position': 'center', 'steps': ['white', 'rgba(255,255,255,0)']},
-               {'type': 'linear', 'position': 40, 'steps': ['#e2e2e2', '#ababab']}
-        ]
+        background: [{
+				stops: [[255,255,255,1], [255,255,255,0]],
+				style: 'radial',
+				position: 'center',
+		        angle: 90
+			},
+			{
+				stops: [[226, 226, 226], [171, 171, 171]],
+				style: 'linear',
+            	angle: 90
+			}
+		]
 };
-var layer = {
-        'height': 300,
-        'width': 300,
-        'dropShadow': { 'offset': [0, 1], 'blur': 5, 'color': 'rgba(0, 0, 0, 0.75)'},
-		'innerShadow': {},
-        'border': {'size': 1, 'style': 'solid', 'color': 'black'},
-        'background': [{'type': 'solid', 'color': 'white'}]
-};
+
+// array compare function - thanks to David and Anentropic
+// http://stackoverflow.com/questions/1773069/using-jquery-to-compare-two-arrays
+// (sort removed and extended to deep comparison)
+// syntax: $.compare(a, b);
+
+jQuery.extend({
+    compare: function (b, a) {
+        if (a.length != b.length) { return false; }
+        for (var i = 0, l = a.length; i < l; i++) {
+            if (a[i] !== b[i]) { 
+				if(typeof a[i] === 'object'){
+					return jQuery.compare(a[i],b[i]);
+				} else {
+					return false;
+				}
+            }
+        }
+        return true;
+    }
+});
+
+/*
+
+things to store:
+	- styles, gradients and colors
+	- layerstyles version
+	- currentStyle
+
+*/
 var defaults = {
-        'dropShadow': [{
-            'active': true,
-            'color': '000000',
-            'opacity': 75,
-            'angle': 90,
-            'distance': 1,
-            'spread': 0,
-            'size': 1
-        }],
-        'innerShadow': [{
-            'active': false,
-            'color': '000000',
-            'opacity': 75,
-            'angle': 90,
-            'distance': 1,
-            'spread': 0,
-            'size': 1
-        }],
-        'background': [{
-            'active': false,
-            'color': '000000',
-            'opacity': 75,
-            'angle': 90,
-            'distance': 1,
-            'spread': 0,
-            'size': 1
-        }]
+		height: 300,
+		width: 300,
+		ratio: 1,
+		globalAngle: 90,
+        dropShadow: {
+            isActive: true,
+            color: [0,0,0],
+            opacity: 75,
+            angle: 90,
+			hasGlobalLight: false,
+            distance: 1,
+            blur: 5,
+            size: 0
+        },
+        innerShadow: {
+            isActive: false,
+            color: [255,255,255],
+            opacity: 100,
+            angle: 90,
+			hasGlobalLight: false,
+            distance: 1,
+            blur: 0,
+            size: 0,
+			isInset: true
+        },
+        background: {
+            isActive: true,
+            opacity: 100,
+			stops: [[252, 252, 252], 23, [[242, 242, 242], 12], 89, [191, 191, 191]],
+			isReverse: false,
+			style: 'linear',
+            angle: 90,
+			hasGlobalLight: false
+        },
+		border: {
+			isActive: true,
+			color: [0,0,0],
+			opacity: 100,
+			size: 1,
+			style: 'solid'
+		},
+		borderRadius: {
+			isActive: false,
+			radii: [[0, "px"],[0, "px"],[0, "px"],[0, "px"]],
+			isSelected: [true,true,true,true],
+			hasPercentage: [false, false, false, false]
+		}
 };
 
-function fn(rgb){
-    // console.log(rgb.r, rgb.g, rgb.b);
+var nav = {
+	$el: $layerstyle,
+	$pages: null,
+	width: null,
+	page: null,
+	prev: null,
+    speed: 0,
+	goTo: function(pageNr){
+		// parse Int
+		pageNr = pageNr*1;
+		localStorage["pageNr"] = pageNr;
+		if(pageNr === -1){
+			pageNr = this.prev; // go back
+		}
+		else {
+			pageNr--; // pages area 1,2,3 - but in the array they are 0,1,2
+		}
+		var goPage = this.$pages.eq(pageNr);
+		var currentPage = this.$pages.eq(this.page);
+		var direction = pageNr > this.page ? 1 : -1; // 1 = right, -1 = left
+		var offset = this.width;
+		this.$el.css('overflow', 'hidden');
+		currentPage
+			.animate({
+				'margin-left': -direction*offset+'px',
+				'opacity': 0
+			}, this.speed, function(){ nav.$pages.eq(nav.page).css('visibility', 'hidden'); });
+		goPage
+			.css({
+				'margin-left': direction*offset+'px',
+				'visibility': 'visible',
+				'opacity': 0
+			})
+			.animate({
+				'margin-left': 0,
+				'opacity': 1
+			}, this.speed, function(){ nav.$el.css('overflow', 'visible'); });
+		this.prev = this.page;
+		this.page = pageNr;
+	},
+	show: function(pageNr){
+		pageNr--;
+		$(this.$pages[pageNr]).css('visibility', 'visible');
+		this.page = pageNr;
+	},
+	init: function(){
+		this.width = this.$el.width();
+		this.$pages = $('> .window', this.$el);
+		this.show(1);
+	}
 }
-
-function pickColor(e){
-    e.preventDefault();
-    var $field = $(this).hasClass('color_field') ? $(this) : $(this).find('.color_field');
-    var currentColor = $field.css('background-color');
-    colorpicker.pick(currentColor, fn);
-}
-
-var lang = localization.de;
 
 function moveWindow(event){
     movingWindow.css({ top: event.pageY - movePos.y, left: event.pageX - movePos.x });
 }
 
-function roundToHalf(value){
-    return (value - parseInt(value, 10)) === 0.5 ? value+1 : value + 1.5;
-}
-
-function parallelUniverse(){
-    var x = roundToHalf(page.width/2 - layer.width/2);
-    var y = roundToHalf(page.height/2 - layer.height/2);
-	var radius = layer.borderRadius;
-    function roundedRect(x,y,width,height,radius,fixedBorder){	
-        pu.beginPath();
-		// fixedBorder means its calculated in pixels - else in percentage
-		if(!fixedBorder){ radius = (width+height)*radius/50; }
-		if(radius > height/2) radius = height/2;
-		if(radius > width/2) radius = width/2;
-		if(typeof radius === "number"){
-			pu.moveTo(x, y+radius);
-			pu.arc(x+radius, y+radius, radius, Math.PI, Math.PI*3/2, false);
-			pu.lineTo(x+width-radius, y);
-			pu.arc(x+width-radius, y+radius, radius, Math.PI*3/2, 0, false);
-			pu.lineTo(x+width, y+height-radius);
-			pu.arc(x+width-radius, y+height-radius, radius, 0,  Math.PI/2,  false);
-			pu.lineTo(x+radius, y+height);
-			pu.arc(x+radius, y+height-radius, radius, Math.PI/2,  Math.PI,  false);
-			pu.lineTo(x, y+radius);
-		}
-		else {
-        	pu.moveTo(x, y+radius.tl.y);
-	        pu.quadraticCurveTo(x, y, x+radius.tl.x, y);
-	        pu.lineTo(x+width-radius.tr.x, y);
-	        pu.quadraticCurveTo(x+width, y, x+width, y+radius.tr.y);
-	        pu.lineTo(x+width, y+height-radius.br.y);
-	        pu.quadraticCurveTo(x+width, y+height, x+width-radius.br.x, y+height);
-	        pu.lineTo(x+radius.bl.x, y+height);
-	        pu.quadraticCurveTo(x, y+height, x, y+height-radius.bl.y);
-			pu.lineTo(x, y+radius.tl.y);
-		}
-        pu.closePath();
-    }
-    // clear the filed
-    pu.clearRect(0,0,page.width,page.height);
-    // shadow
-    pu.shadowOffsetX = layer.dropShadow.offset[0];
-    pu.shadowOffsetY = layer.dropShadow.offset[1];
-    pu.shadowBlur = layer.dropShadow.blur;
-    pu.shadowColor = layer.dropShadow.color;
-    // background
-    //pu.fillStyle = layer.background[0].color;
-	var gradient = pu.createLinearGradient(x, 0, x+layer.width, 0);
-	gradient.addColorStop(0, 'rgb(0,0,0)');
-    gradient.addColorStop(1, 'rgb(255,255,255)');
-	pu.fillStyle = gradient;
-    // border
-    pu.strokeStyle = layer.border.color;
-    pu.lineWidth = layer.border.size;
-    // paint the path
-	if(!radius){
-		pu.strokeRect(x,y,layer.width,layer.height);
-	} else {
-		roundedRect(x,y,layer.width,layer.height, radius, layer.borderRadiusFixed);
-	}
-	pu.fillRect(x,y,layer.width,layer.height);
-}
-parallelUniverse();
-
 function resizeLayer(event, x, y){
-    var halfWidth = parseInt((x/2 || event.pageX - page.width/2 + offset.x), 10);
-    var halfHeight = parseInt((y/2 || event.pageY - page.height/2 + offset.y), 10);
-    var maxWidth = page.width/2;
-    var maxHeight = page.height/2;
+    var halfWidth, halfHeight, maxWidth, maxHeight;
+ 	halfWidth = parseInt(( x != null ? x/2 : event.pageX - dimensions.width/2 + offset.x), 10);
+	halfHeight = event != null && event.shiftKey ? halfWidth / currentStyle.ratio : parseInt(( y != null ? y/2 : event.pageY - dimensions.height/2 + offset.y), 10);
+    maxWidth = dimensions.width/2;
+    maxHeight = dimensions.height/2;
     halfWidth =  halfWidth < 8 ? 8 : halfWidth > maxWidth ? maxWidth : halfWidth;
     halfHeight = halfHeight < 8 ? 8 : halfHeight > maxHeight ? maxHeight : halfHeight;
-    layer.width = halfWidth*2;
-    layer.height = halfHeight*2;
+    currentStyle.width = halfWidth*2;
+    currentStyle.height = halfHeight*2;
     $layer.css({
-        'width': layer.width,
-        'height': layer.height,
+        'width': currentStyle.width,
+        'height': currentStyle.height,
         'margin-top': -halfHeight,
         'margin-left': -halfWidth
     });
-    parallelUniverse();
-}
-
-function print(){
-    document.location.href = $parallelUniverse.get(0).toDataURL('image/png');
-}
-
-function rotatePointer(pot, degrees){
-    var transform = browserPrefix+'transform';
-    $('> div', pot).css(transform, 'rotate('+-degrees+'deg)');
-}
-
-function turnPot(event, pot){
-	event.preventDefault();
-    var pot = pot || event.data.pot,
-		opposite = offset.y - event.pageY,
-        adjacent = event.pageX - offset.x,
-        radiants = Math.atan(opposite/adjacent),
-        degrees = Math.round(radiants*(180/Math.PI), 10);
-	if(shift){
-		if(degrees <= 90 && degrees > 82) degrees = 90;	
-		else if(degrees <= 82 && degrees > 67) degrees = 75;
-		else if(degrees <= 67 && degrees > 52) degrees = 60;
-		else if(degrees <= 52 && degrees > 37) degrees = 45;
-		else if(degrees <= 37 && degrees > 22) degrees = 30;
-		else if(degrees <= 22 && degrees > 7) degrees = 15;	
-		else if(degrees <= 7 && degrees > -8) degrees = 0;	
-		else if(degrees <= -8 && degrees > -23) degrees = -15;	
-		else if(degrees <= -23 && degrees > -38) degrees = -30;	
-		else if(degrees <= -38 && degrees > -53) degrees = -45;	
-		else if(degrees <= -53 && degrees > -68) degrees = -60;	
-		else if(degrees <= -68 && degrees > -83) degrees = -75;
-		else if(degrees <= -83 && degrees > -90) degrees = -90;
-	}
-    if(adjacent < 0 && opposite >= 0){ degrees+= 180; }
-    else if(opposite < 0 && adjacent < 0){ degrees-= 180; }
-	if(degrees === -180) degrees = 180;
-    rotatePointer(pot, degrees);
-    var input = $(pot).next('div').children('input:first-child').val(degrees);
-}
-
-function moveSlider($slider, x){
-    $('> div:nth-child(2)', $slider).css({ left: x+'px' });
-}
-
-function setSlider(slider){
-    var $inputField = $(slider).next('input'),
-        value = $inputField.val(),
-        max = $inputField.attr('data-max'),
-        length = $(slider).width(),
-        position = Math.round(length*value/max);
-    moveSlider(slider, position);
-}
-
-function initialiseSliders(){
-    $.each($sliders, function(i, slider){
-        setSlider(slider);
-    });
-}
-
-function slide(event, slider){
-	event.preventDefault();
-    var $slider = $(slider || event.data.slider);
-		$inputField = $slider.next('input'),
-        max = $inputField.attr('data-max'),
-        length = $slider.width(),
-        position = event.pageX - offset.x;
-    if (position < 0) {
-        position = 0;
-    }
-    else if (position > length) {
-        position = length;
-    }
-    moveSlider($slider, position);
-    $inputField.val(Math.round(position*max/length));
 }
 
 function showSlide(pos){
-    $holderElements.hide().eq(pos).show();
+	$navElements.removeClass('active');
+    $navElements.eq(pos).addClass('active');
+    $holderElements.removeClass('active').eq(pos).addClass('active');
+}
+
+function dragenter(e) {
+  	e.stopPropagation();
+  	e.preventDefault();
+	$body.addClass("dragging");
+}
+
+function dragleave(e) {
+  	e.stopPropagation();
+  	e.preventDefault();
+	$body.removeClass("dragging");
+}
+
+function dragover(e) {
+  	e.stopPropagation();
+  	e.preventDefault();
+}
+
+function drop(e) {
+  	e.stopPropagation();
+  	e.preventDefault();
+
+	dropPos = { x: e.pageX, y: e.pageY };
+	
+  	var dt = e.dataTransfer;
+	var files = dt.files;
+	
+	for (var i = 0, l=files.length; i < l; i++) {
+		var data = files[i];
+		//bytes = new Stream(data);
+		reader = new FileReader();
+		reader.onload = function(e){
+			
+			var img = new Image(),
+				$canvas = $("<canvas></canvas>"),
+				ctx = $canvas.get(0).getContext('2d');
+			
+			img.src = e.target.result;
+			
+			img.onload = function(){
+				
+			  	$canvas.attr({
+					title: data.name,
+					width: img.width,
+					height: img.height
+				});
+
+				$canvas.css({ left: dropPos.x-img.width/2, top: dropPos.y-img.height/2, position: "absolute" });
+				$canvas.addClass("moveable");
+
+				ctx.drawImage(img, 0, 0);
+
+				$canvas.appendTo($workspace);
+			};
+		};
+		reader.readAsDataURL(data);
+	}
+	
+	$body.removeClass("dragging");
+}
+
+function showPickArea(){
+	$body.addClass("pick");
+	// draw the parallel Universe for color picking
+	parallelUniverse.draw();
+	// redraw the parallelUniverse when the layer gets redrawn ("paint" event);
+	$(document).bind('paint', $.proxy( parallelUniverse, "draw" ));
+	$overlay.bind('mousedown', pick);
+}
+
+function hidePickArea(){
+	$body.removeClass("pick");
+	$(document).unbind('paint', $.proxy( parallelUniverse, "draw" ));
+	$overlay.unbind('mousedown');
+}
+
+function pick(event){
+	var pickedColor = pu.getImageData(event.pageX, event.pageY, 1, 1).data;
+	colorpicker.setHex(color.hexFromRgb(pickedColor));
+	colorpicker.update('hex');
 }
 
 function initialise() {
-    initialiseSliders();
-    
+	// include 'dataTransfer' to jquerys event object
+	jQuery.event.props.push('dataTransfer');
+	
+	// set language 
+	// not yet elaborated - whats the best solution to change all titles in the html?
+	// - create the html via js in the first place or select and change them all?
+	// - regex over the all textnodes?
+	lang = localization.en;
+
     $navElements.click(function(){
-        var pos = $navElements.removeClass('active').index(this);
-        $(this).addClass('active');
+        var pos = $navElements.index(this);
+		localStorage["slidePos"] = pos;
         showSlide(pos);
-    });
-    
-    $pots.bind('mousedown', function(event){
-        var myOffset = $(this).offset();
-        offset = { x: myOffset.left+(potDimensions.width/2), y: myOffset.top+(potDimensions.height/2) };
-		turnPot(event, this);
-        $(document).bind('mousemove.global', {pot: this}, turnPot);
-    });
-    
-    $sliders.bind('mousedown', function(event){
-        offset = { x: $(this).offset().left, y: 0 };
-		slide(event, this);
-        $(document).bind('mousemove.global', {slider: this}, slide);
     });
 
     $numericalInputs.bind({
-        focus: numbers.initNumberField,
-        keydown: function(e){ restrictCharacters(e, digits, this); },
-        keyup: function(){ updateField('style'); },
-        blur: function(e){ numbers.validateInput(e, this) }
+		mousedown: function(e){ e.stopPropagation(); },
+        focus: function(e){ numbers.initNumberField(this, 'style'); },
+        keydown: numbers.restrictCharacters,
+        keyup: numbers.keyUp,
+        blur: numbers.validateInput
     });
     
-    /*$colorfields.bind({
-        click: pickColor
-    });*/
-    
-    moveAreas.bind('mousedown', function(event){ 
+    moveAreas.live('mousedown', function(event){ 
         event.preventDefault();
-        movingWindow = $(this).parent();
+		movingWindow = $(this).hasClass("head") ? $(this).parents('#layerstyle') : $(this);
+		movingWindow.addClass("moving");
+		$(document).one('mouseup', function(){ movingWindow.removeClass("moving"); });
         var myOffset = movingWindow.offset();
         movePos = { x:event.pageX-myOffset.left, y:event.pageY-myOffset.top };
-		tools.focusWindow(movingWindow);
         $(document).bind('mousemove.global', moveWindow);
     }); 
     resizeArea.bind({
         mousedown: function(event){
+			event.preventDefault();
+			event.stopPropagation();
+			currentStyle.ratio = currentStyle.width/currentStyle.height;
             $(document).bind('mousemove.global', resizeLayer);
-            var myOffset = $(this).offset();
-            offset = { x: 15-(event.pageX-myOffset.left), y: 15-(event.pageY-myOffset.top) };
+			$body.addClass("resize");
+			$(document).one('mouseup', function(){ $body.removeClass('resize'); });
+            var my_offset = $(this).offset();
+			offset = { x: 15-(event.pageX-my_offset.left), y: 15-(event.pageY-my_offset.top) };
         },
         click: function(event){ event.stopPropagation(); } // prevent bubbling
     });
     $(document).bind({
 		mousemove: function(e){ e.preventDefault(); },
         mouseup: function(){ $(this).unbind('mousemove.global'); },
+		dragenter: dragenter,
+		dragleave: dragleave,
+		dragover: dragover,
+		drop: drop
+	});
+	
+	$(window).bind({
         resize: function(event){
-            page = { width: $body.width(), height: $body.height() };
-            if (page.width < layer.width) { resizeLayer(null, page.width, layer.height); }
-            if (page.height < layer.height) { resizeLayer(null, layer.width, page.height); }
-            $parallelUniverse.attr({'width': page.width, 'height': page.height});
-            parallelUniverse();
+            dimensions = { width: $workspace.width(), height: $workspace.height() };
+            $parallelUniverse.attr({'width': dimensions.width, 'height': dimensions.height});
+            $innerShadowUniverse.attr({'width': dimensions.width, 'height': dimensions.height});
+            if (dimensions.width < currentStyle.width) { resizeLayer(null, dimensions.width, currentStyle.height); }
+            if (dimensions.height < currentStyle.height) { resizeLayer(null, currentStyle.width, dimensions.height); }
         },
         keydown: function(event){
             if(event.altKey){
                 $body.addClass('alt');
-				alt = true;
                 $(this).one('keyup', function(){ $body.removeClass('alt'); });
             }
-            if(event.shiftKey){
-				shift = true;
-                $(this).one('keyup', function(){ shift = false; });
-            }
-        },
-		dblclick: function(event){ event.preventDefault(); }
+        }
     });
+    $layer.dblclick(function(event){ $layerstyle.show(); });
+    $buttons.ok.click(function(){ $layerstyle.hide(); });
+    $buttons.cancel.click(function(){ $layerstyle.hide(); });
+    $buttons.newStyle.click( $.proxy( styleStore, "create" ) );
 
-	/*new uploader('droparea', 'status', 'list');
-	$('#droparea').bind({
-		hover: function(){ console.log("yes", this); $(this).addClass('hello'); },
-		dragEnter: function(e){ $(this).addClass('hello'); },
-		drop: function(e){ 
-			e.preventDefault();
-			console.log(e.dataTransfer.files);
-			$(this).removeClass('hello');
-		}
-	});//*/
-    $layer.click(function(event){ $dialog.show(); });
-    $buttons.ok.click(function(){ $dialog.hide(); });
-    $buttons.cancel.click(function(){ $dialog.hide(); });
-
+	$('#infoButton').click(function(){ $body.removeClass('visited'); });
+	
+	tools.getBrowserPrefix();
+	styleStore.init();
+	nav.init();
 	colorpicker.init();
-	gradientpicker.init();
-	codebox.init();
+	gradienteditor.init();
+	codeBox.init();
+	style.init();
+	showSlide(localStorage["slidePos"] || 1);
+	nav.goTo(localStorage["pageNr"] || 1);
+	
+	$(document)
+		.bind('paint', $.proxy( codeBox, "render" ))
+		.bind('paint', $.proxy( css, "render" ))
+		.trigger('styleChange')
+		.trigger('paint');
 }
 
 // isEven: (n % 2) == 0 -> true? even : odd
