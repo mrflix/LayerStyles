@@ -24,7 +24,7 @@ var css = {
 		if(tools.browserPrefix === '-moz-'){
 			shape = "circle ";
 		}
-		if(Modernizr.oldwebkitgradient || prefix === "-oldwebkit-"){
+		if((prefix === "-webkit-" && Modernizr.oldwebkitgradient) || prefix === "-oldwebkit-"){
 			cssString = this.oldWebkitGradient(stops, angle, style);
 		} else {
 			switch(style){
