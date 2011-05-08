@@ -72,7 +72,7 @@ var codeBox = {
 		this.$copyCode.append(flash);
 	},
 	copy: function(){
-		var text = this.code.replace(/<br>/g, "\n").replace(/&nbsp;/g, " ");
+		var text = this.code.replace(/<br>/g, "\n").replace(/&nbsp;/g, "");
 		this.clip.setText(text);
 	},
 	tabs: function(count){
