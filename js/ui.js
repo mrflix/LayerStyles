@@ -25,7 +25,7 @@ var pot = {
 	},
 	update: function(value){
 		this.move(value);
-		if(currentStyle[this.model].globalLight) currentStyle.globalAngle = value;
+		if(currentStyle[this.model].hasGlobalLight) currentStyle.globalAngle = value;
 		currentStyle[this.model].angle = value;
 		this.set(value);
 		style[this.model].paint();
