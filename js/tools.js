@@ -191,6 +191,7 @@ var tools = {
 	        }
 			// pos is now between 0-100 - for canvas we need it between 0-1
 			pos = pos/100;
+			pos = pos+''; // <-- to change from number to string seems to fix a bug in firefox on ubuntu
 	     	gradient.addColorStop(pos, color);
 	    }
 	    return gradient;
