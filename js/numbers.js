@@ -19,8 +19,14 @@ var numbers = {
 		numbers.restrict = numbers.DIGITS;
 	    numbers.temporaryMode = numbers.$input.attr('id');
 	    switch (numbers.max) {
+		case "10": // 0-10
+	        numbers.regex.compile("^(0|([1-9]{1}|10))$");
+	        break;
 	    case "100": // 0-100
 	        numbers.regex.compile("^(0|([1-9]{1}[0-9]{0,1}|100))$");
+	        break;
+		case "200": // 0-200
+	        numbers.regex.compile("^(0|([1-9]{1}[0-9]{0,1}|[1]{1}[0-9]{0,2}|200))$");
 	        break;
 	    case "255": // 0-255
 	        numbers.regex.compile("^(0|([1-9]{1}[0-9]{0,1}|[1]{1}[0-9]{0,2}|[2]{1}([0-4]{1}[0-9]{1}|[5]{1}[0-5]{1})))$");
@@ -34,7 +40,7 @@ var numbers = {
 		numbers.type = type;
 		numbers.$input = $(input);
 	    numbers.temporaryMode = numbers.$input.attr('id');
-	    numbers.regex.compile("^([A-Fa-f0-9]{6})$");
+	    numbers.regex.compile("^([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$");
 		numbers.restrict = numbers.HEXCODE;
 	},
 	keyUp: function() {
@@ -61,6 +67,13 @@ var numbers = {
 	restrictCharacters: function(event) {
 	    var keycode, character, isControlKey,
 	        // 8 = backspace, 9 = tab, 13 = enter, 35 = home, 37 = left, 38 = top, 39 = right, 40 = down
+			//
+			// future:
+			// - allowe copy & paste shortcuts ('windows/apple': 91, 'v': 86, 'c': 67, 'x': 88)
+			// 	 set boolean for 91 - next click: check for boolean and set false
+			//   oh - on windows it's strg+c and strg+v (check ctrlKey)
+			//
+			// - allowe to paste hexcodes including a '#' at the beginning: slice it out
 			controlKeys = [ 8, 9, 13, 35, 36, 37, 38, 39, 40 ];
 	    numbers.value = numbers.$input.val();
 	    if (event.keyCode) {
