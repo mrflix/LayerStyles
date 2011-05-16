@@ -15,6 +15,7 @@ var codeBox = {
 		this.$colorToggle = Object.create(toggle);
 		this.$colorToggle.init("colorSwitch", "hex", tools.options, $.proxy( this, "render" ));
 		
+		this.location = window.location.href.slice(0, window.location.href.lastIndexOf("/"));
 		this.initClipboard();
 		
 		this.$copyCode.add(this.$body).add(this.$box)
@@ -64,7 +65,7 @@ var codeBox = {
 	 * @see		http://code.google.com/p/zeroclipboard/wiki/Instructions
 	 */
 	initClipboard: function(){
-		ZeroClipboard.setMoviePath( 'http://localhost/~mrflix/LayerStyles/js/zeroclipboard/ZeroClipboard.swf' );
+		ZeroClipboard.setMoviePath( this.location + '/js/zeroclipboard/ZeroClipboard.swf' );
 		this.clip = new ZeroClipboard.Client();
 		this.clip.addEventListener( 'onMouseDown', $.proxy( this, "copy" ) );
 		this.clip.setHandCursor(true);
