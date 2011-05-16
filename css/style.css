@@ -237,6 +237,10 @@ ul { list-style: none; }
     position: absolute;
 	z-index: 100;
 	display: block;
+	-webkit-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 #headerBg {
 	top: 0;
