@@ -85,7 +85,7 @@ var styleStore = {
 		this.$el.append(styleFragment);
 	},
 	addStyle: function(name, packedStyle, pos){
-		var expandedStyle = this.expand(packedStyle);
+		var expandedStyle = this.decompress(packedStyle);
 		var cssObj = css.displayCss(expandedStyle);
 		var swatch = $('<div class="swatch" />')
                 .attr({ 'title': name, 'data-pos': pos })
@@ -117,7 +117,7 @@ var styleStore = {
             self.loadStyle(pos);
        	}
 	},
-	pack: function(style){
+	compress: function(style){
 		var slimStyle = {};
 		var fatStyle = $.extend(true, {}, style);
 		for( key in fatStyle ){
@@ -150,7 +150,7 @@ var styleStore = {
 		}
 		return slimStyle;
 	},
-	expand: function(packedStyle){
+	decompress: function(packedStyle){
 		var expandedStyle = $.extend(true, {}, defaults);
 		for(key in packedStyle){
 			expandedStyle[key] = $.extend({}, defaults[key], packedStyle[key]);
@@ -164,13 +164,13 @@ var styleStore = {
 	},
 	loadStyle: function(pos){
 		this.$el.children().eq(pos).addClass('active');
-		currentStyle = this.expand(this.styles[pos].style);
+		currentStyle = this.decompress(this.styles[pos].style);
 		$(document).trigger('styleChange').trigger('paint');
 	},
 	create: function(){
 		var newStyle, name = prompt(lang.NewStyle,"Style "+this.styles.length);
         if(name){
-			newStyle = {'name': name, 'style': this.pack(currentStyle)};
+			newStyle = {'name': name, 'style': this.compress(currentStyle)};
         	this.styles.push(newStyle);
             this.renderStyles([newStyle]);
 			localStorage["styles"] = JSON.stringify(this.styles);
