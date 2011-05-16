@@ -77,6 +77,20 @@ jQuery.extend({
     }
 });
 
+// Object.create implementation for older browsers
+// by Ben Newman
+
+if(Object.create === undefined){
+	Object.create = function( proto, props ) {
+	  var ctor = function( ps ) {
+	    if ( ps )
+	      Object.defineProperties( this, ps );
+	  };
+	  ctor.prototype = proto;
+	  return new ctor( props );
+	};
+}
+
 /*
 
 things to store:
