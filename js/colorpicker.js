@@ -319,12 +319,12 @@ var colorpicker = {
 	    var missingLength = 6 - hex.length;
 		if(missingLength === 3){ 
 			var parts = hex.split("");
-			if(parts[0]===parts[1] && parts[1]===parts[2]){
-				hex = parts[0]+parts[0]+parts[0]+parts[0]+parts[0]+parts[0];
-				missingLength = 0;
+			hex = parts[0]+parts[0]+parts[1]+parts[1]+parts[2]+parts[2];
+		} else {
+			for(var i = 0; i<missingLength; i++){ 
+				hex = "0" + hex;
 			}
 		}
-		for(var i = 0; i<missingLength; i++){ hex = "0" + hex; };
 	    this.hex = hex;
 	},
 	setHsb: function() {
