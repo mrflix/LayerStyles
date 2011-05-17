@@ -11,6 +11,9 @@ var numbers = {
 	direction: 0,
 	DIGITS: /[-1234567890]/g,
 	HEXCODE: /[A-Fa-f0-9]/g,
+	// control Keys: 8 = backspace, 9 = tab, 13 = enter, 35 = home, 37 = left, 38 = top, 39 = right, 40 = down
+	controlKeys: [ 8, 9, 13, 35, 36, 37, 38, 39, 40 ],
+	numpadKeys: { 96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7", 104: "8", 105: "9" },
 	initNumberField: function(input, type) {
 		numbers.type = type;
 		numbers.$input = $(input);
@@ -65,16 +68,13 @@ var numbers = {
 	    }
 	},
 	restrictCharacters: function(event) {
-	    var keycode, character, isControlKey,
-	        // 8 = backspace, 9 = tab, 13 = enter, 35 = home, 37 = left, 38 = top, 39 = right, 40 = down
-			//
-			// future:
-			// - allowe copy & paste shortcuts ('windows/apple': 91, 'v': 86, 'c': 67, 'x': 88)
-			// 	 set boolean for 91 - next click: check for boolean and set false
-			//   oh - on windows it's strg+c and strg+v (check ctrlKey)
-			//
-			// - allowe to paste hexcodes including a '#' at the beginning: slice it out
-			controlKeys = [ 8, 9, 13, 35, 36, 37, 38, 39, 40 ];
+	    var keycode, character, isControlKey;
+		// future:
+		// - allowe copy & paste shortcuts ('windows/apple': 91, 'v': 86, 'c': 67, 'x': 88)
+		// 	 set boolean for 91 - next click: check for boolean and set false
+		//   oh - on windows it's strg+c and strg+v (check ctrlKey)
+		//
+		// - allowe to paste hexcodes including a '#' at the beginning: slice it out
 	    numbers.value = numbers.$input.val();
 	    if (event.keyCode) {
 	        keycode = event.keyCode;
@@ -82,7 +82,12 @@ var numbers = {
 	    else if (event.which) {
 	        keycode = event.which;
 	    }
-	    character = String.fromCharCode(keycode);
+		// if pressed key is a numeric pad key use the numpad map object to detect its number
+		if(keycode >= 96 && keycode <= 105){
+			character = this.numpadKeys[keycode];
+		} else {
+			character = String.fromCharCode(keycode);
+		}
 	    // 1 for key up (keycode 38), -1 for key down (keycode 40), 0 for other keys
 	    numbers.direction = 0;
 	    switch(keycode){
@@ -94,7 +99,7 @@ var numbers = {
 	        return false;
 	    }
 	    else {
-	        isControlKey = controlKeys.join(",").match(new RegExp(keycode));
+	        isControlKey = this.controlKeys.join(",").match(new RegExp(keycode));
 	        if (isControlKey) {
 	            return true;
 	        }
