@@ -22,8 +22,8 @@ var localization = {
             "AnIntegerBetween": "An integer between",
             "and": "and",
             "isRequired": "is required",
-			"Custom": "Custom",
-			"DeleteStyle": "Delete Style"
+            "Custom": "Custom",
+            "DeleteStyle": "Delete Style"
         },
         de: {
             "Color": "Farbe",
@@ -48,7 +48,7 @@ var localization = {
             "AnIntegerBetween": "Eine Zahl zwischen",
             "and": "und",
             "isRequired": "wird benötigt",
-			"Custom": "Unbekannt",
-			"DeleteStyle": "Style löschen"
+            "Custom": "Unbekannt",
+            "DeleteStyle": "Style löschen"
         }
 }
