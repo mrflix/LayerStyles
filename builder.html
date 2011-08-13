@@ -65,37 +65,37 @@
 	                            <div>
 	                                <div class="color_field"></div>
 	                            </div>
-	                            <label>Opacity:</label>
+	                            <label for="ds-opacity">Opacity:</label>
 	                            <div>
 	                                <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="opacity" type="text" data-min="0" data-max="100" data-restrict="digits" value="75">
+	                                <input class="opacity" id="ds-opacity" type="text" data-min="0" data-max="100" data-restrict="digits" value="75">
 	                                %
 	                            </div>
-	                            <label class="angle_holder">Angle:</label>
+	                            <label class="angle_holder" for="ds-angle">Angle:</label>
 	                            <div>
 	                                <div class="pot"><div class="pointer"><div class="dot"></div><div class="line"></div></div></div>
 	                                <div class="angle_holder">
-	                                    <input class="angle" type="text" data-min="0" data-max="360" data-restrict="digits" value="90">
+	                                    <input class="angle" id="ds-angle" type="text" data-min="0" data-max="360" data-restrict="digits" value="90">
 	                                    &deg;
-	                                    <input type="checkbox" class="globalLight"><label>Use Global Light</label>
+	                                    <input type="checkbox" class="globalLight" id="ds-globalLight"><label for="ds-globalLight">Use Global Light</label>
 	                                </div>
 	                            </div>
-	                            <label>Distance:</label>
+	                            <label for="ds-distance">Distance:</label>
 	                            <div>
 	                                <div class="slider" data-easing="true"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="distance" type="text" data-min="0" data-max="100" value="1">
+	                                <input class="distance" id="ds-distance" type="text" data-min="0" data-max="100" value="1">
 	                                px
 	                            </div>
-	                            <label>Blur:</label>
+	                            <label for="ds-blur">Blur:</label>
 	                            <div>
 	                                <div class="slider" data-easing="true"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="blur" type="text" data-min="0" data-max="100" value="5">
+	                                <input class="blur" id="ds-blur" type="text" data-min="0" data-max="100" value="5">
 	                                px
 	                            </div>
-	                            <label>Size:</label>
+	                            <label for="ds-size">Size:</label>
 	                            <div>
 	                                <div class="slider" data-easing="true"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="size" type="text" data-min="0" data-max="255" value="0">
+	                                <input class="size" id="ds-size" type="text" data-min="0" data-max="255" value="0">
 	                                px
 	                            </div>
 	                            <div class="clear"></div>
@@ -106,53 +106,53 @@
 	                            <div>
 	                                <div class="color_field"></div>
 	                            </div>
-	                            <label>Opacity:</label>
+	                            <label for="is-opacity">Opacity:</label>
 	                            <div>
 	                                <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="opacity" type="text" data-min="0" data-max="100" data-restrict="digits" value="90">
+	                                <input class="opacity" id="is-opacity" type="text" data-min="0" data-max="100" data-restrict="digits" value="90">
 	                                %
 	                            </div>
-	                            <label class="angle_holder">Angle:</label>
+	                            <label class="angle_holder" for="is-angle">Angle:</label>
 	                            <div>
 	                                <div class="pot"><div class="pointer"><div class="dot"></div><div class="line"></div></div></div>
 	                                <div class="angle_holder">
-	                                    <input class="angle" type="text" data-min="0" data-max="360" data-restrict="digits" value="90">
+	                                    <input class="angle" id="is-angle" type="text" data-min="0" data-max="360" data-restrict="digits" value="90">
 	                                    &deg;
-	                                    <input type="checkbox" class="globalLight"><label>Use Global Light</label>
+	                                    <input type="checkbox" class="globalLight" id="is-globalLight"><label for="is-globalLight">Use Global Light</label>
 	                                </div>
 	                            </div>
-	                            <label>Distance:</label>
+	                            <label for="is-distance">Distance:</label>
 	                            <div>
 	                                <div class="slider" data-easing="true"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="distance" type="text" data-min="0" data-max="100" value="1">
+	                                <input class="distance" id="is-distance" type="text" data-min="0" data-max="100" value="1">
 	                                px
 	                            </div>
-	                            <label>Blur:</label>
+	                            <label for="is-blur">Blur:</label>
 	                            <div>
 	                                <div class="slider" data-easing="true"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="blur" type="text" data-min="0" data-max="100" value="0">
+	                                <input class="blur" id="is-blur" type="text" data-min="0" data-max="100" value="0">
 	                                px
 	                            </div>
-	                            <label>Size:</label>
+	                            <label for="is-size">Size:</label>
 	                            <div>
 	                                <div class="slider" data-easing="true"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="size" type="text" data-min="0" data-max="255" value="0">
+	                                <input class="size" id="is-size" type="text" data-min="0" data-max="255" value="0">
 	                                px
 	                            </div>
 	                            <div class="clear"></div>
 	                        </div>
 	                        <div id="background">
 	                            <h3>Background</h3>
-								<label>Opacity:</label>
+								<label for="bg-opacity">Opacity:</label>
 	                            <div>
 	                                <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="opacity" type="text" data-min="0" data-max="100" value="100">
+	                                <input class="opacity" id="bg-opacity" type="text" data-min="0" data-max="100" value="100">
 	                                %
 	                            </div>
 								<label>Gradient</label>
 								<div>
 									<div class="gradientField"></div>
-									<input type="checkbox" class="reverse"><label>Reverse</label>
+									<input type="checkbox" class="reverse" id="bg-reverse"><label for="bg-reverse">Reverse</label>
 								</div>
 								<label>Style</label>
 								<div>
@@ -163,13 +163,13 @@
 										<option value="cover">Radial - cover</option>
 									</select>
 								</div>
-	                            <label class="angle_holder">Angle:</label>
+	                            <label class="angle_holder" for="bg-angle">Angle:</label>
 	                            <div>
 	                                <div class="pot"><div class="pointer"><div class="dot"></div><div class="line"></div></div></div>
 	                                <div class="angle_holder">
-	                                    <input class="angle" type="text" data-min="0" data-max="360" value="90">
+	                                    <input class="angle" id="bg-angle" type="text" data-min="0" data-max="360" value="90">
 	                                    &deg;
-	                                    <input type="checkbox" class="globalLight"><label>Use Global Light</label>
+	                                    <input type="checkbox" class="globalLight" id="bg-globalLight"><label for="bg-globalLight">Use Global Light</label>
 	                                </div>
 	                            </div>
 		                       	<div class="clear"></div>
@@ -180,16 +180,16 @@
 	                            <div>
 	                                <div class="color_field"></div>
 	                            </div>
-	                            <label>Opacity:</label>
+	                            <label for="bd-opacity">Opacity:</label>
 	                            <div>
 	                                <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="opacity" type="text" data-min="0" data-max="100" value="100">
+	                                <input class="opacity" id="bd-opacity" type="text" data-min="0" data-max="100" value="100">
 	                                %
 	                            </div>
-	                            <label>Size:</label>
+	                            <label for="bd-size">Size:</label>
 	                            <div>
 	                                <div class="slider"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-	                                <input class="size" type="text" data-min="0" data-max="10" value="1">
+	                                <input class="size" id="bd-size" type="text" data-min="0" data-max="10" value="1">
 	                                px
 	                            </div>
 	                            <label>Style:</label>
@@ -203,10 +203,10 @@
 	                        </div><!-- /border -->
 							<div id="borderRadius">
 	                            <h3>Border Radius</h3>
-								<label>Radius:</label>
+								<label for="br-radius">Radius:</label>
 								<div>
 									<div class="slider" data-easing="true"><div class="bar"></div><div class="arrow"><div class="spike"></div><div class="rear"></div></div></div>
-									<input class="radius" type="text" data-min="0" data-max="200" value="0">
+									<input class="radius" id="br-radius" type="text" data-min="0" data-max="200" value="0">
 	                                <span class="options" id="border_radius_unit"><span id="border_radius_pixel" data-unit="px" class="active">px</span><span id="border_radius_percent" data-unit="%">%</span></span>
 								</div>
 								<label>Corners:</label>
@@ -276,7 +276,7 @@
 	                            <span>Color:</span><div id="stop_color" class="color_field"></div>
 	                        </div>
 	                        <div class="disabled">
-	                            <span>Location:</span>
+	                            <label for="stop_location">Location:</label>
 									<input type="text" id="stop_location" data-min="0" data-max="100" data-restrict="digits" disabled="disabled">%
 	                        </div>
 	                        <button id="remove_stop" disabled="disabled">Delete</button>
@@ -311,43 +311,43 @@
 	                <div class="color_inputs">
 	                    <ul>
 	                        <li>
-								<input type="radio" name="color" value="hsb_h">
-								<span>H:</span>
+								<input type="radio" id="hsb_h-radio" name="color" value="hsb_h">
+								<label for="hsb_h-radio">H:</label>
 								<input id="hsb_h" type="text" data-min="0" data-max="360" data-restrict="digits" value="0">
 								&deg;
 							</li>
 	                        <li>
-								<input type="radio" name="color" value="hsb_s">
-								<span>S:</span>
+								<input type="radio" id="hsb_s-radio" name="color" value="hsb_s">
+								<label for="hsb_s-radio">S:</label>
 								<input id="hsb_s" type="text" data-min="0" data-max="100" data-restrict="digits" value="0">
 								%
 							</li>
 	                        <li>
-								<input type="radio" name="color" value="hsb_b" checked="checked">
-								<span>B:</span>
+								<input type="radio" id="hsb_b-radio" name="color" value="hsb_b" checked="checked">
+								<label for="hsb_b-radio">B:</label>
 								<input id="hsb_b" type="text" data-min="0" data-max="100" data-restrict="digits" value="0">
 								%
 							</li>
 	                    </ul>
 	                    <ul>
 	                        <li>
-								<input type="radio" name="color" value="rgb_r">
-								<span>R:</span>
+								<input type="radio" id="rgb_r-radio" name="color" value="rgb_r">
+								<label for="rgb_r-radio">R:</label>
 								<input id="rgb_r" type="text" data-min="0" data-max="255" data-restrict="digits" value="0">
 							</li>
 	                        <li>
-								<input type="radio" name="color" value="rgb_g">
-								<span>G:</span>
+								<input type="radio" id="rgb_g-radio" name="color" value="rgb_g">
+								<label for="rgb_g-radio">G:</label>
 								<input id="rgb_g" type="text" data-min="0" data-max="255" data-restrict="digits" value="0">
 							</li>
 	                        <li>
-								<input type="radio" name="color" value="rgb_b">
-								<span>B:</span>
+								<input type="radio" id="rgb_b-radio" name="color" value="rgb_b">
+								<label for="rgb_b-radio">B:</label>
 								<input id="rgb_b" type="text" data-min="0" data-max="255" data-restrict="digits" value="0">
 							</li>
 	                    </ul>
 	                    <div id="hex_holder">
-							#
+							<label for="hex">#</label>
 							<input type="text" id="hex" size="10" maxlength="6" data-restrict="hexcode">
 						</div>
 	                </div>
