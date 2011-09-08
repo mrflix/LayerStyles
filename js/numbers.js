@@ -13,6 +13,8 @@ var numbers = {
     HEXCODE: /[A-Fa-f0-9]/g,
     // control Keys: 8 = backspace, 9 = tab, 13 = enter, 35 = home, 37 = left, 38 = top, 39 = right, 40 = down
     controlKeys: [ 8, 9, 13, 35, 36, 37, 38, 39, 40 ],
+    // cut, copy & paste keys are 67 = c, 86 = v and 88 = x additional 65 = a ('select all')
+    cutCopyPasteKeys: [ 65, 67, 86, 88 ],
     numpadKeys: { 96: "0", 97: "1", 98: "2", 99: "3", 100: "4", 101: "5", 102: "6", 103: "7", 104: "8", 105: "9" },
     initNumberField: function(input, type) {
         numbers.type = type;
@@ -46,8 +48,16 @@ var numbers = {
         numbers.regex.compile("^([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$");
         numbers.restrict = numbers.HEXCODE;
     },
-    keyUp: function() {
+    keyUp: function(event) {
+        var keycode;
+        if (event.keyCode) {
+            keycode = event.keyCode;
+        } 
+        else if (event.which) {
+            keycode = event.which;
+        }
         clearTimeout(numbers.timeout);
+        numbers.value = numbers.$input.val();
         if(numbers.regex.test(numbers.value)){
             numbers.match = true;
             if(!numbers.pressed){
@@ -56,21 +66,25 @@ var numbers = {
                 numbers.pressed = false;
             }
         }
+        if(keycode === 91){
+            numbers.commandKeyPressed = false;
+        }
     },
     updateField: function() {
         switch(numbers.type){
         case 'color':
-            if (numbers.match) colorpicker.update(numbers.temporaryMode);
+            if (numbers.match && numbers.value !== "") colorpicker.update(numbers.temporaryMode);
             break;
         case 'style':
-            numbers.$input.change();
+            console.log(numbers.value);
+            if (numbers.value !== "") numbers.$input.change();
             break;
         }
     },
     restrictCharacters: function(event) {
-        var keycode, character, isControlKey;
+        var keycode, character, isControlKey, isCopyCutPasteKey;
         // future:
-        // - allowe copy & paste shortcuts ('windows/apple': 91, 'v': 86, 'c': 67, 'x': 88)
+        // - allow copy & paste shortcuts ('windows/apple': 91, 'v': 86, 'c': 67, 'x': 88)
         //      set boolean for 91 - next click: check for boolean and set false
         //   oh - on windows it's strg+c and strg+v (check ctrlKey)
         //
@@ -84,9 +98,20 @@ var numbers = {
         }
         // if pressed key is a numeric pad key use the numpad map object to detect its number
         if(keycode >= 96 && keycode <= 105){
-            character = this.numpadKeys[keycode];
+            character = numbers.numpadKeys[keycode];
         } else {
             character = String.fromCharCode(keycode);
+        }
+        //console.log("Current Value: "+numbers.value+"\nKeycode: "+keycode);
+        if(numbers.commandKeyPressed){
+            isCopyCutPasteKey = numbers.copyCutPasteKeys.join(",").match(new RegExp(keycode));
+            if(isCopyCutPasteKey){
+                return true;
+            }
+        }
+        if(keycode === 91) {
+            numbers.commandKeyPressed = true;
+            return false;
         }
         // 1 for key up (keycode 38), -1 for key down (keycode 40), 0 for other keys
         numbers.direction = 0;
@@ -99,7 +124,7 @@ var numbers = {
             return false;
         }
         else {
-            isControlKey = this.controlKeys.join(",").match(new RegExp(keycode));
+            isControlKey = numbers.controlKeys.join(",").match(new RegExp(keycode));
             if (isControlKey) {
                 return true;
             }
@@ -147,6 +172,6 @@ var numbers = {
         errorString = lang.AnIntegerBetween+" "+ numbers.min +" "+lang.and+" "+ numbers.max +" "+lang.isRequired+". "+lang.ClosestValueInserted+".";
         alert(errorString);
         nearestInt = Math.abs(numbers.max - integer) < Math.abs(numbers.min - integer) ? numbers.max : numbers.min;
-           numbers.$input.val(nearestInt).focus().change();
+        numbers.$input.val(nearestInt).focus().change();
     }
 };
