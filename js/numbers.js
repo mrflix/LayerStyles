@@ -76,7 +76,6 @@ var numbers = {
             if (numbers.match && numbers.value !== "") colorpicker.update(numbers.temporaryMode);
             break;
         case 'style':
-            console.log(numbers.value);
             if (numbers.value !== "") numbers.$input.change();
             break;
         }
@@ -102,7 +101,6 @@ var numbers = {
         } else {
             character = String.fromCharCode(keycode);
         }
-        //console.log("Current Value: "+numbers.value+"\nKeycode: "+keycode);
         if(numbers.commandKeyPressed){
             isCopyCutPasteKey = numbers.copyCutPasteKeys.join(",").match(new RegExp(keycode));
             if(isCopyCutPasteKey){
@@ -165,7 +163,8 @@ var numbers = {
         numbers.value = numbers.$input.val();
         integer = parseInt(numbers.value, 10);
         if(numbers.regex.test(integer)){
-            numbers.$input.val(integer);
+            console.log(integer);
+            numbers.$input.val(integer ? integer : "");
             return true;
         }
         event.preventDefault();
