@@ -55,7 +55,7 @@ var color = {
         }
     },
     hexFromRgb: function(rgb){
-        var hexcode = this.toHex(rgb[0])+this.toHex(rgb[1])+this.toHex(rgb[2]);
+        var hexcode = this.toHex(rgb[0])+this.toHex(rgb[1])+this.toHex(rgb[2]),
             parts = hexcode.split("");
         // "000" instead of "000000"
         return (parts[0]===parts[1]) && (parts[2]===parts[3]) && (parts[4]==parts[5]) ? parts[0]+parts[2]+parts[4] : hexcode;
