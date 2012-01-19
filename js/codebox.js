@@ -1,6 +1,6 @@
 var codeBox = {
     options: {
-        visible: false,
+        visible: true,
         height: 163
     },
     minHeight: 100,
@@ -102,11 +102,20 @@ var codeBox = {
         }
         // add gradient
         if(currentStyle.background.isActive){
-            this.code += "background-image: " + css.drawGradient(currentStyle, "-moz-") + ";<br>";
+            this.code += "background: " + tools.averageGradientColor(currentStyle.background.stops) + ";<br>";
             this.code += "background-image: " + css.drawGradient(currentStyle, "-oldwebkit-") + ";<br>";
+            this.code += "background-image: " + css.drawGradient(currentStyle, "-webkit-") + ";<br>";
+            this.code += "background-image: " + css.drawGradient(currentStyle, "-moz-") + ";<br>";
+            this.code += "background-image: " + css.drawGradient(currentStyle, "-o-") + ";<br>";
+            this.code += "background-image: " + css.drawGradient(currentStyle, "-ms-") + ";<br>";
+            this.code += "background-image: " + css.drawGradient(currentStyle, "") + ";<br>";
         }
         // add dropShadow and innerShadow
-        this.code += currentStyle.dropShadow.isActive || currentStyle.innerShadow.isActive ? "box-shadow: " + css.boxShadow(currentStyle) + ";<br>" : "";
+        if(currentStyle.dropShadow.isActive || currentStyle.innerShadow.isActive){
+            this.code += "-webkit-box-shadow: " + css.boxShadow(currentStyle) + ";<br>";
+            this.code += "-moz-box-shadow: " + css.boxShadow(currentStyle) + ";<br>";
+            this.code += "box-shadow: " + css.boxShadow(currentStyle) + ";<br>";
+        }
         this.$box.html(this.code);
     }
 };
