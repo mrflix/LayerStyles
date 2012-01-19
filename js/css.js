@@ -13,6 +13,16 @@ var css = {
         45: "bottom left",
         0: "left"
     },
+    newGradientDirections: {
+        315: "to bottom right",
+        270: "to bottom",
+        225: "to bottom left",
+        180: "to left",
+        135: "to top left",
+        90: "to top",
+        45: "to top right",
+        0: "to right"
+    },
     /**
      * @method  cssGradient    
      * @param   gradient {object}
@@ -32,7 +42,7 @@ var css = {
                     tempStops = style === "reflected" ? tools.reflectStops(stops) : stops;
 
                     if (this.directions[angle]) {
-                        pos = this.directions[angle];
+                        pos = prefix === "" ? this.newGradientDirections[angle] : this.directions[angle];
                     } else {
                         pos = angle+"deg";
                     }
