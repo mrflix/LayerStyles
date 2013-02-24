@@ -20,6 +20,79 @@ var tools = {
         this.browserPrefix = prefix === "" ? "" : '-' + prefix.charAt(0).toLowerCase() + prefix.slice(1) +'-';
     },
     /**
+     * @method  averageGradientColor
+     * @param   fullStops {stops-array}
+     * @return  color {string}
+     * @example averageGradientColor([[255,255,255], [0,0,0]]) returns gray
+     */
+    averageGradientColor: function(fullStops){
+        var stops = gradienteditor.expand( $.extend(true, [], fullStops) ),
+            reducedArray = [],
+            l = stops.length;
+
+        for(var i = 0; i < l; i++){
+            var stop = stops[i];
+            if(typeof stop === 'number'){
+                stops[i] = this.getMiddlepoint(stops[i-1], stop, stops[i+1]);
+            }
+        }    
+
+        for(var i = 0; i < l-1; i++){
+            var stopA = stops[i],
+                stopB = stops[i+1];
+
+            reducedArray.push(this.averageStop(stopA, stopB));
+        }        
+        // reduce array to one rgb array
+        reducedArray = reducedArray.reduce(this.averageColor, [0,0,0]);
+
+        // round its values
+        for(var i=0; i<3; i++){
+            reducedArray[i] = Math.round(reducedArray[i]);
+        }
+
+        // return said array as color string
+        return this.toColor(reducedArray);
+    },
+    /**
+     * @method  averageStop
+     * @param   stopA {stop-array}
+     * @param   stopB {stop-array}
+     * @return  color-stop {stop-array}
+     * @example averageStop([[255,255,255], 0], [[0,0,0], 100]) returns [[128,128,128], 50]
+     */
+    averageStop: function(stopA, stopB){
+        var colorA = stopA[0],
+            posA = stopA[1],
+            colorB = stopB[0],
+            posB = stopB[1];
+
+        return [
+            [
+                this.getCenter(colorA[0],colorB[0]),
+                this.getCenter(colorA[1],colorB[1]),
+                this.getCenter(colorA[2],colorB[2])
+            ], 
+            posB - posA
+        ];
+    },
+    /**
+     * @method  averageColor
+     * @param   previousValue {color-array}
+     * @param   currentValue {stop-array}
+     * @return  color {color-array}
+     */
+    averageColor: function(previousValue, currentValue, index, array){
+        var color = currentValue[0],
+            weight = currentValue[1]/100;
+
+        return [
+            previousValue[0] + color[0] * weight, // r
+            previousValue[1] + color[1] * weight, // g
+            previousValue[2] + color[2] * weight  // b
+        ];
+    },
+    /**
      * @method  roundToMultiple
      * @param   number {integer}
      * @param    multiple {integer}    multiple to round to
